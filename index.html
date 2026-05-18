@@ -1,495 +1,1064 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Inspector de Ensayos — CIFP La Laboral</title>
+<title>QuizForja — DPMC</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Segoe UI',sans-serif;background:#1a1a2e;color:#eee;min-height:100vh;display:flex;align-items:flex-start;justify-content:center;padding:16px}
-#app{width:100%;max-width:800px}
-.screen{display:none}.screen.active{display:block}
-#screen-intro{text-align:center;padding-top:16px}
-.logo{font-size:2.8rem;margin-bottom:6px}
-h1{font-size:1.9rem;color:#00d4aa;letter-spacing:2px;margin-bottom:4px}
-.subtitle{color:#aaa;margin-bottom:18px;font-size:.9rem}
-.rounds-preview{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:18px}
-.round-card{background:#16213e;border:1px solid #00d4aa33;border-radius:10px;padding:12px}
-.round-card .icon{font-size:1.4rem;margin-bottom:4px}
-.round-card h3{font-size:.78rem;color:#00d4aa;margin-bottom:3px}
-.round-card p{font-size:.72rem;color:#aaa}
-.name-box{background:#16213e;border-radius:12px;padding:18px;margin-bottom:16px}
-.name-box label{display:block;margin-bottom:7px;color:#00d4aa;font-weight:bold;font-size:.95rem}
-.name-box input{width:100%;background:#0d1b2a;border:1px solid #00d4aa55;border-radius:8px;padding:10px 14px;color:#fff;font-size:1rem;outline:none}
-.name-box input:focus{border-color:#00d4aa}
-.btn-start{background:linear-gradient(135deg,#00d4aa,#0094ff);color:#fff;border:none;padding:13px 44px;font-size:1rem;font-weight:bold;border-radius:50px;cursor:pointer;transition:transform .2s}
-.btn-start:hover{transform:scale(1.05)}
-#hud{display:flex;justify-content:space-between;align-items:center;background:#16213e;border-radius:10px;padding:9px 16px;margin-bottom:12px}
-.hud-round{font-size:.8rem;color:#aaa}.hud-round span{color:#00d4aa;font-weight:bold}
-.hud-score{font-size:1rem;font-weight:bold;color:#ffd700}
-.progress-bar{height:5px;background:#333;border-radius:3px;margin-bottom:14px}
-.progress-fill{height:100%;background:linear-gradient(90deg,#00d4aa,#0094ff);border-radius:3px;transition:width .4s}
-.q-card{background:#16213e;border-radius:12px;padding:22px;margin-bottom:14px}
-.round-badge{display:inline-block;background:#00d4aa22;color:#00d4aa;border:1px solid #00d4aa55;border-radius:20px;padding:3px 12px;font-size:.7rem;font-weight:bold;letter-spacing:1px;margin-bottom:10px}
-.q-text{font-size:.97rem;line-height:1.6;color:#ddd;margin-bottom:14px}
-.q-scenario{background:#0d1b2a;border-left:3px solid #00d4aa;border-radius:0 8px 8px 0;padding:9px 13px;margin-bottom:14px;font-style:italic;color:#bbb;font-size:.88rem}
-.options{display:grid;grid-template-columns:1fr 1fr;gap:7px}
-.opt-btn{background:#0d1b2a;border:1px solid #ffffff22;border-radius:8px;padding:11px 13px;font-size:.85rem;color:#ddd;cursor:pointer;text-align:left;transition:all .2s;line-height:1.3}
-.opt-btn:hover:not(:disabled){border-color:#00d4aa;background:#00d4aa11}
-.opt-btn.correct{border-color:#00ff88;background:#00ff8820;color:#00ff88}
-.opt-btn.wrong{border-color:#ff4466;background:#ff446620;color:#ff4466}
-.opt-btn:disabled{cursor:default}
-.match-container{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.match-col h4{font-size:.73rem;color:#aaa;letter-spacing:1px;margin-bottom:7px;text-transform:uppercase}
-.match-item{background:#0d1b2a;border:2px solid #ffffff22;border-radius:8px;padding:9px 11px;font-size:.8rem;color:#ddd;cursor:pointer;margin-bottom:5px;transition:all .2s;min-height:44px;display:flex;align-items:center}
-.match-item:hover:not(.matched):not(.paired){border-color:#00d4aa}
-.match-item.selected{border-color:#0094ff;background:#0094ff22;color:#7dcfff}
-.match-item.paired{border-color:#ffd700;background:#ffd70015;color:#ffd700}
-.match-item.matched{border-color:#00ff88;background:#00ff8815;color:#00ff88;cursor:default}
-.match-item.wrong-match{border-color:#ff4466;background:#ff446615;color:#ff8899}
-.defecto-btns{display:flex;gap:12px;justify-content:center;margin-top:10px}
-.defecto-btn{flex:1;padding:14px;border:2px solid;border-radius:10px;font-size:.9rem;font-weight:bold;cursor:pointer;transition:all .2s;background:transparent;line-height:1.4}
-.defecto-btn.aceptable{border-color:#00ff88;color:#00ff88}
-.defecto-btn.aceptable:hover:not(:disabled){background:#00ff8820}
-.defecto-btn.defecto{border-color:#ff4466;color:#ff4466}
-.defecto-btn.defecto:hover:not(:disabled){background:#ff446620}
-.defecto-btn:disabled{opacity:.5;cursor:default}
-.num-problem{background:#0d1b2a;border-radius:8px;padding:14px;margin-bottom:12px;font-size:.88rem;line-height:1.8}
-.num-problem .dato{color:#7dcfff}
-.num-options{display:grid;grid-template-columns:1fr 1fr;gap:7px}
-.feedback{border-radius:8px;padding:11px 14px;margin-top:12px;font-size:.86rem;line-height:1.5;display:none}
-.feedback.show{display:block}
-.feedback.ok{background:#00ff8818;border:1px solid #00ff8855;color:#00ff88}
-.feedback.fail{background:#ff446618;border:1px solid #ff446655;color:#ff8899}
-.feedback strong{display:block;margin-bottom:3px;font-size:.92rem}
-.btn-next{background:#00d4aa;color:#0d1b2a;border:none;padding:9px 26px;border-radius:50px;font-size:.88rem;font-weight:bold;cursor:pointer;margin-top:12px;display:none;transition:transform .2s}
-.btn-next:hover{transform:scale(1.04)}
-.btn-next.show{display:inline-block}
-#screen-results{padding-top:8px}
-.res-header{text-align:center;background:#16213e;border-radius:12px;padding:20px;margin-bottom:14px}
-.res-header .logo{font-size:2.2rem;margin-bottom:5px}
-.res-header h1{font-size:1.5rem;color:#00d4aa;margin-bottom:3px}
-.res-name{font-size:1rem;color:#ffd700;margin-bottom:10px}
-.result-score{font-size:3.2rem;font-weight:bold;color:#ffd700;margin:6px 0 2px}
-.result-max{color:#aaa;font-size:.88rem;margin-bottom:8px}
-.result-msg{font-size:.95rem;color:#ddd;margin-bottom:14px}
-.res-rounds{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;margin-bottom:14px}
-.res-round-item{background:#0d1b2a;border-radius:8px;padding:10px 6px;text-align:center}
-.res-round-item .r-icon{font-size:1.1rem}
-.res-round-item .r-label{font-size:.62rem;color:#aaa;margin-top:2px}
-.res-round-item .r-val{font-size:.95rem;font-weight:bold;color:#00d4aa;margin-top:2px}
-.detail-section{background:#16213e;border-radius:12px;padding:18px;margin-bottom:12px}
-.detail-section h2{font-size:.95rem;color:#00d4aa;margin-bottom:12px;border-bottom:1px solid #00d4aa33;padding-bottom:7px}
-.detail-item{display:flex;gap:9px;align-items:flex-start;padding:9px 0;border-bottom:1px solid #ffffff08}
-.detail-item:last-child{border-bottom:none}
-.detail-icon{font-size:1rem;margin-top:1px;flex-shrink:0}
-.detail-text{flex:1}
-.detail-text .d-q{font-size:.83rem;color:#ccc;margin-bottom:3px}
-.detail-text .d-ans{font-size:.78rem}
-.detail-text .d-ans.ok{color:#00ff88}
-.detail-text .d-ans.fail{color:#ff8899}
-.capture-note{background:#ffd70015;border:1px solid #ffd70055;border-radius:9px;padding:12px;text-align:center;margin-bottom:14px;color:#ffd700;font-size:.85rem}
-.btn-restart{background:linear-gradient(135deg,#00d4aa,#0094ff);color:#fff;border:none;padding:11px 34px;font-size:.92rem;font-weight:bold;border-radius:50px;cursor:pointer;display:block;margin:0 auto}
+:root {
+  --bg:#0c0c0f; --surface:#141418; --card:#1a1a21;
+  --border:#28282f; --accent:#f5c400; --accent2:#ff4d6d;
+  --accent3:#00d4aa; --accent4:#7b6cf6; --text:#f0f0f5; --muted:#77778a;
+  --a:#3b9eff; --b:#ff4d6d; --c:#f5c400; --d:#00d4aa; --r:12px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;display:flex;align-items:flex-start;justify-content:center;padding:20px;}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(245,196,0,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(245,196,0,.025) 1px,transparent 1px);background-size:44px 44px;pointer-events:none;z-index:0;}
+#app{position:relative;z-index:1;width:100%;max-width:900px;}
+.screen{display:none;animation:fadeUp .4s ease;}
+.screen.active{display:block;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.logo{font-family:'Bebas Neue',sans-serif;font-size:clamp(52px,10vw,92px);letter-spacing:4px;line-height:1;background:linear-gradient(135deg,var(--accent) 0%,#ffaa00 45%,var(--accent2) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;text-align:center;margin-bottom:2px;}
+.logo-sub{font-family:'Bebas Neue',sans-serif;letter-spacing:7px;font-size:13px;color:var(--muted);text-align:center;margin-bottom:32px;}
+.card{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:28px;margin-bottom:18px;}
+.card-title{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px;color:var(--accent);margin-bottom:14px;}
+.inp{width:100%;background:var(--surface);border:2px solid var(--border);border-radius:var(--r);padding:13px 18px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:15px;outline:none;transition:border-color .2s;}
+.inp:focus{border-color:var(--accent);}
+.inp::placeholder{color:var(--muted);}
+.btn{border:none;border-radius:var(--r);padding:13px 28px;font-family:'Bebas Neue',sans-serif;font-size:19px;letter-spacing:2px;cursor:pointer;transition:all .18s;display:inline-block;}
+.btn-primary{background:var(--accent);color:#000;}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 22px rgba(245,196,0,.28);}
+.btn-primary:disabled{opacity:.35;cursor:not-allowed;transform:none;box-shadow:none;}
+.btn-outline{background:transparent;border:2px solid var(--accent);color:var(--accent);}
+.btn-outline:hover{background:rgba(245,196,0,.09);transform:translateY(-2px);}
+.btn-danger{background:var(--accent2);color:#fff;}
+.btn-danger:hover{transform:translateY(-2px);}
+.row{display:flex;gap:10px;align-items:stretch;}
+.row .inp{flex:1;}
+/* ROL SELECTOR */
+.rol-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:8px;}
+.rol-btn{background:var(--surface);border:2px solid var(--border);border-radius:16px;padding:28px 20px;cursor:pointer;transition:all .2s;text-align:center;color:var(--text);}
+.rol-btn:hover{border-color:var(--accent);background:rgba(245,196,0,.06);transform:translateY(-2px);}
+.rol-btn .rol-icon{font-size:48px;display:block;margin-bottom:10px;}
+.rol-btn .rol-name{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px;display:block;}
+.rol-btn .rol-desc{font-size:12px;color:var(--muted);margin-top:4px;display:block;}
+.rol-btn.teacher-btn:hover,.rol-btn.teacher-btn.sel{border-color:var(--accent4);background:rgba(123,108,246,.08);}
+.rol-btn.student-btn:hover,.rol-btn.student-btn.sel{border-color:var(--accent3);background:rgba(0,212,170,.08);}
+/* UT GRID */
+.ut-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;margin-bottom:20px;}
+.ut-btn{background:var(--surface);border:2px solid var(--border);border-radius:var(--r);padding:14px;cursor:pointer;transition:all .18s;text-align:left;color:var(--text);font-family:'DM Sans',sans-serif;}
+.ut-btn:hover,.ut-btn.sel{border-color:var(--accent);background:rgba(245,196,0,.07);transform:translateY(-2px);}
+.ut-btn .uti{font-size:24px;display:block;margin-bottom:6px;}
+.ut-btn .utn{font-weight:700;font-size:12px;display:block;}
+.ut-btn .utd{color:var(--muted);font-size:11px;}
+/* SALA CODE */
+.sala-display{background:var(--surface);border:2px solid var(--accent4);border-radius:16px;padding:20px;text-align:center;margin-bottom:18px;}
+.sala-display .sd-label{font-size:12px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:4px;}
+.sala-display .sd-code{font-family:'Bebas Neue',sans-serif;font-size:52px;letter-spacing:8px;color:var(--accent4);line-height:1;}
+.sala-display .sd-hint{font-size:12px;color:var(--muted);margin-top:6px;}
+/* WAITING ROOM */
+.waiting-header{text-align:center;padding:20px 0 28px;}
+.waiting-header h2{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:2px;margin-bottom:6px;}
+.waiting-header p{color:var(--muted);font-size:14px;}
+.players-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-bottom:20px;min-height:80px;}
+.player-chip{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:10px 14px;font-size:13px;font-weight:700;text-align:center;animation:fadeUp .3s ease;}
+.player-chip .pc-icon{font-size:20px;display:block;margin-bottom:4px;}
+/* LOADING */
+#loading-screen{text-align:center;padding:80px 20px;}
+.spinner{width:56px;height:56px;border:4px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 24px;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-text{font-size:16px;color:var(--muted);}
+/* COUNTDOWN */
+#countdown-screen{text-align:center;padding:60px 0;}
+.cd-num{font-family:'Bebas Neue',sans-serif;font-size:clamp(90px,18vw,160px);line-height:1;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:cdp 1s ease;}
+.cd-lbl{font-family:'Bebas Neue',sans-serif;letter-spacing:6px;font-size:14px;color:var(--muted);margin-top:10px;}
+@keyframes cdp{from{transform:scale(1.5);opacity:0}60%{transform:scale(.94);opacity:1}to{transform:scale(1);opacity:1}}
+/* HUD */
+.hud{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+.hud-player{font-size:13px;font-weight:700;color:var(--muted);}
+.hud-player span{color:var(--accent);}
+.prog-wrap{flex:1;margin:0 16px;height:5px;background:var(--border);border-radius:3px;overflow:hidden;}
+.prog-bar{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:3px;transition:width .5s;}
+.hud-score{font-family:'Bebas Neue',sans-serif;font-size:21px;color:var(--accent);}
+/* TIMER */
+.timer-ring{position:relative;width:62px;height:62px;flex-shrink:0;}
+.timer-ring svg{transform:rotate(-90deg);}
+.timer-ring circle{fill:none;stroke-width:5;}
+.timer-ring .track{stroke:var(--border);}
+.timer-ring .fill{stroke:var(--accent);stroke-linecap:round;stroke-dasharray:163;stroke-dashoffset:0;transition:stroke-dashoffset 1s linear,stroke .5s;}
+.timer-num{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:21px;}
+/* QUESTION */
+.q-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.q-num{font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:2px;color:var(--muted);}
+.q-card{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:26px;margin-bottom:16px;min-height:100px;display:flex;align-items:center;justify-content:center;text-align:center;}
+.q-text{font-size:clamp(16px,2.6vw,23px);font-weight:700;line-height:1.45;}
+/* ANSWERS */
+.ans-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.ans-btn{border:none;border-radius:var(--r);padding:18px 18px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:11px;text-align:left;transition:all .13s;color:#fff;position:relative;overflow:hidden;}
+.ans-btn::before{content:'';position:absolute;inset:0;background:rgba(255,255,255,0);transition:background .13s;}
+.ans-btn:hover::before{background:rgba(255,255,255,.07);}
+.ans-btn[data-i="0"]{background:var(--a);}
+.ans-btn[data-i="1"]{background:var(--b);}
+.ans-btn[data-i="2"]{background:var(--c);color:#000;}
+.ans-btn[data-i="3"]{background:var(--d);color:#000;}
+.ans-btn .al{font-family:'Bebas Neue',sans-serif;font-size:19px;width:32px;height:32px;background:rgba(0,0,0,.2);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.ans-btn.correct{outline:4px solid #fff;outline-offset:2px;animation:pok .4s ease;}
+.ans-btn.wrong{opacity:.35;transform:scale(.97);}
+.ans-btn:disabled{cursor:default;}
+@keyframes pok{0%{transform:scale(1)}50%{transform:scale(1.04)}100%{transform:scale(1)}}
+/* FEEDBACK */
+.feedback{margin-top:12px;border-radius:var(--r);padding:13px 20px;font-weight:700;font-size:16px;text-align:center;display:none;animation:fadeUp .25s ease;}
+.feedback.show{display:block;}
+.feedback.ok{background:rgba(0,212,170,.12);border:1px solid var(--accent3);color:var(--accent3);}
+.feedback.fail{background:rgba(255,77,109,.12);border:1px solid var(--accent2);color:var(--accent2);}
+/* POINTS POP */
+.pts-pop{position:fixed;font-family:'Bebas Neue',sans-serif;font-size:44px;color:var(--accent);pointer-events:none;animation:ppop 1.2s ease forwards;text-shadow:0 2px 10px rgba(245,196,0,.4);}
+@keyframes ppop{0%{opacity:1;transform:translateY(0) scale(1)}60%{opacity:1;transform:translateY(-55px) scale(1.2)}100%{opacity:0;transform:translateY(-95px) scale(.8)}}
+/* WAITING ANSWER (student) */
+#wait-answer-screen{text-align:center;padding:60px 20px;}
+.wait-icon{font-size:64px;animation:float 2s ease-in-out infinite;display:block;margin:0 auto 20px;}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+/* TEACHER QUESTION VIEW */
+.teacher-q-card{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:26px;margin-bottom:16px;text-align:center;}
+.teacher-q-text{font-size:clamp(18px,3vw,28px);font-weight:700;line-height:1.4;margin-bottom:20px;}
+.teacher-ans-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px;}
+.teacher-ans{border-radius:var(--r);padding:14px 18px;font-size:14px;font-weight:600;display:flex;align-items:center;gap:10px;color:#fff;}
+.teacher-ans[data-i="0"]{background:var(--a);}
+.teacher-ans[data-i="1"]{background:var(--b);}
+.teacher-ans[data-i="2"]{background:var(--c);color:#000;}
+.teacher-ans[data-i="3"]{background:var(--d);color:#000;}
+.teacher-ans .tal{font-family:'Bebas Neue',sans-serif;font-size:18px;width:30px;height:30px;background:rgba(0,0,0,.2);border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.teacher-ans.correct-ans{outline:4px solid #fff;outline-offset:2px;}
+/* LIVE RESPONSES */
+.live-resp{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px 18px;margin-bottom:14px;}
+.live-resp-title{font-size:12px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:10px;}
+.resp-bar-wrap{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+.resp-label{font-size:13px;font-weight:700;width:24px;text-align:center;}
+.resp-bar{height:18px;border-radius:4px;transition:width .4s ease;min-width:4px;}
+.resp-bar[data-i="0"]{background:var(--a);}
+.resp-bar[data-i="1"]{background:var(--b);}
+.resp-bar[data-i="2"]{background:var(--c);}
+.resp-bar[data-i="3"]{background:var(--d);}
+.resp-count{font-size:12px;color:var(--muted);}
+.resp-total{font-size:12px;color:var(--muted);margin-top:6px;}
+/* TEACHER TIMER */
+.teacher-hud{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+.teacher-qnum{font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:2px;color:var(--muted);}
+.teacher-score-col{font-family:'Bebas Neue',sans-serif;font-size:14px;color:var(--muted);}
+/* RESULTS */
+#results-screen{text-align:center;}
+.res-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(36px,7vw,64px);letter-spacing:3px;margin-bottom:6px;}
+.res-sub{color:var(--muted);margin-bottom:24px;}
+.score-big{font-family:'Bebas Neue',sans-serif;font-size:clamp(58px,12vw,96px);line-height:1;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.score-lbl{color:var(--muted);font-size:12px;letter-spacing:2px;text-transform:uppercase;}
+.stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:20px;}
+.stat-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px;}
+.stat-val{font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--accent);}
+.stat-lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;}
+.rank-msg{font-size:17px;font-weight:700;margin-top:18px;padding:13px;border-radius:var(--r);}
+.rank-gold{background:rgba(245,196,0,.1);color:var(--accent);}
+.rank-silver{background:rgba(180,180,180,.1);color:#bbb;}
+.rank-bronze{background:rgba(200,120,60,.1);color:#c87a3c;}
+.rank-ok{background:rgba(0,212,170,.1);color:var(--accent3);}
+.rank-low{background:rgba(255,77,109,.1);color:var(--accent2);}
+/* LEADERBOARD */
+.lb-section{margin-top:24px;text-align:left;}
+.lb-title{font-family:'Bebas Neue',sans-serif;letter-spacing:2px;font-size:16px;color:var(--muted);margin-bottom:10px;}
+.lb-row{display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:11px 14px;margin-bottom:7px;transition:all .3s;}
+.lb-rank{font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--muted);width:28px;text-align:center;flex-shrink:0;}
+.lb-name{flex:1;font-weight:700;font-size:14px;}
+.lb-pct{font-size:11px;color:var(--muted);text-align:right;}
+.lb-score-val{font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--accent);}
+.lb-row.me{border-color:var(--accent);background:rgba(245,196,0,.06);}
+/* REVIEW */
+.rev-item{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;margin-bottom:7px;display:flex;align-items:flex-start;gap:10px;}
+.rev-icon{font-size:16px;flex-shrink:0;margin-top:2px;}
+.rev-q{font-size:12px;color:var(--muted);}
+.rev-a{font-size:13px;font-weight:600;margin-top:2px;}
+.ri-ok .rev-a{color:var(--accent3);}
+.ri-fail .rev-a{color:var(--accent2);}
+/* ERR */
+.err-box{background:rgba(255,77,109,.1);border:1px solid rgba(255,77,109,.3);border-radius:var(--r);padding:12px 16px;color:var(--accent2);font-size:13px;margin-top:12px;display:none;}
+.err-box.show{display:block;}
+/* TEACHER FINAL RANKING */
+.teacher-lb .lb-row{padding:14px 18px;}
+.teacher-lb .lb-score-val{font-size:26px;}
+.teacher-lb .lb-name{font-size:16px;}
+/* LIVE RANKING */
+.teacher-layout{display:grid;grid-template-columns:1fr 280px;gap:16px;align-items:start;}
+.live-ranking{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:16px;position:sticky;top:20px;}
+.live-ranking-title{font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:2px;color:var(--accent);margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;}
+.lr-row{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:var(--r);margin-bottom:6px;background:var(--surface);border:1px solid var(--border);transition:all .4s;}
+.lr-rank{font-family:'Bebas Neue',sans-serif;font-size:17px;color:var(--muted);width:24px;text-align:center;flex-shrink:0;}
+.lr-name{flex:1;font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.lr-score{font-family:'Bebas Neue',sans-serif;font-size:17px;color:var(--accent);flex-shrink:0;}
+.lr-row:nth-child(1){border-color:var(--accent);background:rgba(245,196,0,.07);}
+.lr-row:nth-child(2){border-color:#aaa;background:rgba(180,180,180,.05);}
+.lr-row:nth-child(3){border-color:#c87a3c;background:rgba(200,120,60,.05);}
+@media(max-width:700px){.teacher-layout{grid-template-columns:1fr;}.live-ranking{position:static;}}
+/* STATUS BADGE */
+.status-badge{display:inline-flex;align-items:center;gap:6px;border-radius:20px;padding:4px 12px;font-size:12px;font-weight:700;}
+.status-online{background:rgba(0,212,170,.15);color:var(--accent3);border:1px solid rgba(0,212,170,.3);}
+.status-dot{width:7px;height:7px;border-radius:50%;background:var(--accent3);animation:pulse 1.5s infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+@media(max-width:500px){
+  .ans-grid,.teacher-ans-grid{grid-template-columns:1fr;}
+  .stats-grid{grid-template-columns:1fr;}
+  .rol-grid{grid-template-columns:1fr;}
+  .ut-grid{grid-template-columns:1fr 1fr;}
+  .row{flex-direction:column;}
+}
 </style>
 </head>
 <body>
 <div id="app">
 
-<div id="screen-intro" class="screen active">
-  <div class="logo">🔬</div>
-  <h1>INSPECTOR DE ENSAYOS</h1>
-  <p class="subtitle">Ensayos Destructivos y No Destructivos · CFGS Construcciones Metálicas · CIFP La Laboral</p>
-  <div class="rounds-preview">
-    <div class="round-card"><div class="icon">🔬</div><h3>RONDA 1 — Ensayos Destructivos</h3><p>20 preguntas de 25 · tracción, flexión, dureza, impacto</p></div>
-    <div class="round-card"><div class="icon">🎯</div><h3>RONDA 2 — Ensayos No Destructivos</h3><p>20 preguntas de 25 · VT, PT, MT, UT, RT</p></div>
-    <div class="round-card"><div class="icon">🔗</div><h3>RONDA 3 — Empareja END</h3><p>Relaciona cada técnica con su principio físico</p></div>
-    <div class="round-card"><div class="icon">⚠️</div><h3>RONDA 4 — ¿Indicación o Defecto?</h3><p>15 casos de 20 · decide según la norma</p></div>
-    <div class="round-card" style="grid-column:1/-1"><div class="icon">🔢</div><h3>RONDA 5 — Problemas numéricos</h3><p>Brinell · Vickers · Rockwell · Charpy · números aleatorios cada partida</p></div>
+<!-- ===== ROL ===== -->
+<div id="rol-screen" class="screen active">
+  <div class="logo">QuizForja</div>
+  <div class="logo-sub">DPMC — Definición de Procesos de Mecanizado, Conformado y Montaje</div>
+  <div class="card">
+    <div class="card-title">¿Quién eres?</div>
+    <div class="rol-grid">
+      <button class="rol-btn teacher-btn" id="rol-teacher">
+        <span class="rol-icon">👨‍🏫</span>
+        <span class="rol-name">Docente</span>
+        <span class="rol-desc">Crear sala y controlar el juego</span>
+      </button>
+      <button class="rol-btn student-btn" id="rol-student">
+        <span class="rol-icon">🎓</span>
+        <span class="rol-name">Alumno</span>
+        <span class="rol-desc">Unirse con código de sala</span>
+      </button>
+    </div>
   </div>
-  <div class="name-box">
-    <label>Introduce tu nombre y apellidos antes de empezar:</label>
-    <input type="text" id="input-name" placeholder="Nombre Apellido1 Apellido2" maxlength="60">
-  </div>
-  <button class="btn-start" onclick="startGame()">▶ EMPEZAR</button>
 </div>
 
-<div id="screen-game" class="screen">
-  <div id="hud">
-    <div class="hud-round">RONDA <span id="hud-round">1</span>/5 · Pregunta <span id="hud-q">1</span>/<span id="hud-total">-</span></div>
-    <div class="hud-score">⭐ <span id="hud-score">0</span> pts</div>
+<!-- ===== TEACHER SETUP ===== -->
+<div id="teacher-setup-screen" class="screen">
+  <div class="logo">QuizForja</div>
+  <div class="card">
+    <div class="card-title">1. Elige una unidad didáctica</div>
+    <div class="ut-grid" id="ut-grid"></div>
+    <div id="all-units-btn-wrap" style="margin-bottom:20px">
+      <button class="ut-btn sel" id="all-units-btn" style="width:100%;border-color:var(--accent);background:rgba(245,196,0,.07);text-align:center;padding:18px">
+        <span class="uti">🎯</span>
+        <span class="utn">TODAS LAS UNIDADES</span>
+        <span class="utd">40 preguntas mezcladas del temario completo</span>
+      </button>
+    </div>
+    <div class="card-title">2. Tu nombre</div>
+    <input class="inp" type="text" id="teacher-name" placeholder="Nombre del docente..." maxlength="24" style="margin-bottom:18px">
+    <div class="err-box" id="setup-err"></div>
+    <div style="display:flex;gap:10px;justify-content:space-between;align-items:center;margin-top:8px">
+      <button class="btn btn-outline" onclick="show('rol-screen')">← VOLVER</button>
+      <button class="btn btn-primary" id="create-sala-btn" disabled>CREAR SALA →</button>
+    </div>
   </div>
-  <div class="progress-bar"><div class="progress-fill" id="prog"></div></div>
-  <div id="q-container"></div>
-  <button class="btn-next" id="btn-next" onclick="nextQuestion()">Siguiente →</button>
 </div>
 
-<div id="screen-results" class="screen">
-  <div class="res-header">
-    <div class="logo">🏆</div>
-    <h1>RESULTADO FINAL</h1>
-    <div class="res-name" id="res-name"></div>
-    <div class="result-score" id="final-score">0</div>
-    <div class="result-max" id="final-max"></div>
-    <div class="result-msg" id="final-msg"></div>
+<!-- ===== TEACHER WAITING ROOM ===== -->
+<div id="teacher-wait-screen" class="screen">
+  <div class="logo" style="font-size:clamp(36px,7vw,64px);margin-bottom:16px">QuizForja</div>
+  <div class="sala-display">
+    <div class="sd-label">Código de sala</div>
+    <div class="sd-code" id="sala-code-display">——</div>
+    <div class="sd-hint">Comparte este código con tus alumnos</div>
   </div>
-  <div class="res-rounds">
-    <div class="res-round-item"><div class="r-icon">🔬</div><div class="r-label">Ronda 1 ED</div><div class="r-val" id="r1s">0</div></div>
-    <div class="res-round-item"><div class="r-icon">🎯</div><div class="r-label">Ronda 2 END</div><div class="r-val" id="r2s">0</div></div>
-    <div class="res-round-item"><div class="r-icon">🔗</div><div class="r-label">Ronda 3</div><div class="r-val" id="r3s">0</div></div>
-    <div class="res-round-item"><div class="r-icon">⚠️</div><div class="r-label">Ronda 4</div><div class="r-val" id="r4s">0</div></div>
-    <div class="res-round-item"><div class="r-icon">🔢</div><div class="r-label">Ronda 5</div><div class="r-val" id="r5s">0</div></div>
+  <div class="card">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+      <div class="card-title" style="margin-bottom:0">Alumnos conectados</div>
+      <div class="status-badge status-online"><div class="status-dot"></div><span id="player-count">0</span> en sala</div>
+    </div>
+    <div class="players-grid" id="players-grid">
+      <div style="color:var(--muted);font-size:13px;grid-column:1/-1;text-align:center;padding:20px">Esperando alumnos...</div>
+    </div>
+    <div style="display:flex;gap:10px;justify-content:space-between;align-items:center;margin-top:6px">
+      <div style="font-size:13px;color:var(--muted)">Mínimo 1 alumno para empezar</div>
+      <button class="btn btn-primary" id="start-game-btn" disabled>INICIAR JUEGO →</button>
+    </div>
   </div>
-  <div id="detail-container"></div>
-  <div class="capture-note">📸 Haz una captura de pantalla de esta página y envíasela al profesor</div>
-  <button class="btn-restart" onclick="restartGame()">🔄 Jugar de nuevo</button>
 </div>
 
+<!-- ===== STUDENT JOIN ===== -->
+<div id="student-join-screen" class="screen">
+  <div class="logo">QuizForja</div>
+  <div class="card">
+    <div class="card-title">Unirse a la sala</div>
+    <div style="margin-bottom:12px">
+      <label style="font-size:13px;color:var(--muted);display:block;margin-bottom:6px">Tu nombre</label>
+      <input class="inp" type="text" id="student-name" placeholder="Escribe tu nombre..." maxlength="24">
+    </div>
+    <div style="margin-bottom:18px">
+      <label style="font-size:13px;color:var(--muted);display:block;margin-bottom:6px">Código de sala</label>
+      <input class="inp" type="text" id="student-sala" placeholder="Ej: AB12CD" maxlength="8" style="text-transform:uppercase;letter-spacing:3px;font-family:'Bebas Neue',sans-serif;font-size:22px;">
+    </div>
+    <div class="err-box" id="join-err"></div>
+    <div style="display:flex;gap:10px;justify-content:space-between;align-items:center;margin-top:8px">
+      <button class="btn btn-outline" onclick="show('rol-screen')">← VOLVER</button>
+      <button class="btn btn-primary" id="join-btn" disabled>ENTRAR →</button>
+    </div>
+  </div>
 </div>
-<script>
-const allR1=[
-  {q:"¿Cuál es el ensayo mecánico más importante y extendido?",opts:["Ensayo de flexión","Ensayo de tracción","Ensayo de dureza Vickers","Ensayo Charpy"],c:1,fb:"El ensayo de TRACCIÓN es el más importante y extendido. Proporciona el límite elástico (σe), la resistencia a la tracción (Rm), el módulo de Young (E), el alargamiento de rotura (A%) y la estricción (Z%)."},
-  {q:"¿Qué representa el límite elástico (σe) en la curva tensión-deformación?",opts:["La tensión máxima soportada antes de la rotura","La tensión máxima que no produce deformación permanente","La pendiente de la zona plástica","La energía absorbida hasta la rotura"],c:1,fb:"El límite elástico (σe) es la tensión máxima que el material puede soportar sin sufrir deformación permanente. Por debajo de σe el material recupera su forma original; por encima entra en zona plástica."},
-  {q:"En el ensayo de flexión a tres puntos, ¿dónde se aplica la carga?",opts:["En los dos extremos de la probeta","En el punto central, con la probeta apoyada en dos rodillos","En dos puntos intermedios iguales","En cualquier punto, el resultado es el mismo"],c:1,fb:"En la flexión a TRES PUNTOS la probeta se apoya en dos rodillos y la carga F se aplica en el punto central. Es el método más habitual. En la flexión a cuatro puntos la carga se aplica en dos puntos intermedios."},
-  {q:"¿Qué mide la TENACIDAD de un material?",opts:["Su resistencia a ser rayado superficialmente","Su rigidez ante cargas estáticas","Su capacidad para deformarse antes de romperse","Su resistencia a la corrosión"],c:2,fb:"La TENACIDAD es la capacidad de los materiales para deformarse antes de romperse. Su valor numérico se representa mediante la RESILIENCIA (KCV o KCU). Un material tenaz no es frágil."},
-  {q:"¿Cuál es la diferencia principal entre el ensayo Charpy y el ensayo Izod?",opts:["En Charpy se usa péndulo y en Izod maza de caída libre","En Charpy la probeta es biapoyada; en Izod está empotrada en voladizo","En Charpy la entalla es en V y en Izod siempre en U","Son exactamente iguales, solo cambia el nombre"],c:1,fb:"La diferencia clave es la sujeción: en CHARPY la probeta está biapoyada y el péndulo golpea en el centro. En IZOD la probeta está empotrada en voladizo y el péndulo golpea el extremo libre."},
-  {q:"¿Qué tipo de penetrador usa el ensayo de dureza Vickers?",opts:["Bola de acero templado","Cono de diamante de 120°","Pirámide de diamante de base cuadrada","Bola de carburo de tungsteno"],c:2,fb:"El ensayo VICKERS utiliza una pirámide de diamante de base cuadrada. Deja una huella romboidal cuyas diagonales d₁ y d₂ se miden al microscopio. Permite ensayar cualquier dureza y espesores pequeños."},
-  {q:"¿Qué indica una superficie de rotura brillante y sin deformación en el ensayo Charpy?",opts:["Comportamiento dúctil: alta resiliencia","Comportamiento frágil: baja resiliencia","Material muy tenaz con alta absorción de energía","El ensayo ha fallado y debe repetirse"],c:1,fb:"Una superficie brillante y rotura sin apenas deformación indican comportamiento FRÁGIL y baja resiliencia. Una superficie mate con deformación notable indica comportamiento dúctil y alta resiliencia."},
-  {q:"¿Qué fórmula corresponde al cálculo de la dureza Brinell?",opts:["HB = F / (π·D·d)","HB = 2F / [π·D·(D − √(D²−d²))]","HB = 1,854·F / d²","HB = (h₃ − h₁) / 0,002"],c:1,fb:"La fórmula del ensayo BRINELL es HB = 2F / [π·D·(D − √(D²−d²))], donde F es la fuerza en kp, D el diámetro de la bola y d el diámetro de la huella, ambos en mm."},
-  {q:"¿Cuál es el penetrador del ensayo Rockwell C (para materiales duros)?",opts:["Bola de acero de 1 mm de diámetro","Pirámide de diamante Vickers","Cono de diamante de 120°","Bola de carburo de 10 mm"],c:2,fb:"En el ensayo ROCKWELL C se utiliza un cono de diamante de 120° con una carga total de 150 kg (10 kg de precarga + 140 kg adicionales). La fórmula es HRC = 100 − e."},
-  {q:"¿En qué dos grandes grupos se clasifican los ensayos de materiales?",opts:["Ensayos mecánicos y ensayos químicos","Ensayos destructivos y ensayos no destructivos","Ensayos estáticos y ensayos dinámicos","Ensayos normalizados y ensayos de laboratorio"],c:1,fb:"Los ensayos se clasifican en ENSAYOS DESTRUCTIVOS (ED), en los que la pieza queda dañada o inutilizada, y ENSAYOS NO DESTRUCTIVOS (END), en los que la pieza puede seguir utilizándose."},
-  {q:"¿Cuál es la principal diferencia entre un ensayo destructivo y uno no destructivo?",opts:["El coste del equipo necesario","En los ED la pieza queda dañada o inutilizada; en los END no","El tiempo que tarda en realizarse","El tipo de material que pueden ensayar"],c:1,fb:"Los ENSAYOS DESTRUCTIVOS (ED) dañan o inutilizan la probeta. Los ENSAYOS NO DESTRUCTIVOS (END) no alteran la pieza, que puede seguir utilizándose tras el ensayo."},
-  {q:"¿Qué tipo de ensayos permiten inspeccionar piezas en servicio sin retirarlas?",opts:["Solo los ensayos destructivos","Los ensayos no destructivos","Únicamente el ensayo de dureza","Ninguno, siempre hay que retirar la pieza"],c:1,fb:"Los ENSAYOS NO DESTRUCTIVOS (END) permiten inspeccionar piezas reales en servicio sin retirarlas ni dañarlas. Permiten además inspecciones rápidas y repetidas sobre la misma pieza."},
-  {q:"¿Qué significan las siglas UNE?",opts:["Unión Normalizada Europea","Una Norma Española","Unidad Nacional de Ensayos","Universal Normativa de Estandarización"],c:1,fb:"UNE significa 'Una Norma Española'. Son normas nacionales publicadas por AENOR, habitualmente adoptadas de normas europeas (EN) o internacionales (ISO)."},
-  {q:"¿Bajo qué norma se realiza el ensayo de tracción?",opts:["UNE-EN ISO 9712","UNE-EN ISO 6892-1","UNE-EN ISO 3452","UNE-EN ISO 9934"],c:1,fb:"El ensayo de tracción se realiza según la norma UNE-EN ISO 6892-1, que establece el método de ensayo a temperatura ambiente para materiales metálicos, incluyendo las dimensiones de la probeta y la velocidad de carga."},
-  {q:"¿Qué es la estricción (Z%) en el ensayo de tracción?",opts:["El alargamiento total de la probeta tras la rotura","La reducción de sección en la zona de rotura: Z = (S₀ − Sf) / S₀ × 100","La tensión máxima soportada por el material","La pendiente de la curva tensión-deformación"],c:1,fb:"La ESTRICCIÓN (Z%) es la reducción de sección transversal en la zona de rotura. Se calcula como Z = (S₀ − Sf) / S₀ × 100. Es un indicador de ductilidad del material."},
-  {q:"¿Qué evalúa el ensayo de flexión?",opts:["La resistencia del material a ser penetrado","El comportamiento del material ante cargas perpendiculares a su eje","La energía absorbida hasta la rotura por impacto","La resistencia a la corrosión superficial"],c:1,fb:"El ensayo de FLEXIÓN evalúa el comportamiento de un material cuando se somete a cargas perpendiculares a su eje, generando tensiones combinadas de tracción y compresión. Es especialmente relevante en materiales frágiles."},
-  {q:"¿Qué es la dureza de un material?",opts:["Su capacidad para absorber energía de impacto","Su resistencia a la deformación permanente bajo carga axial","Su resistencia a ser rayado o penetrado superficialmente","Su módulo de elasticidad bajo carga estática"],c:2,fb:"La DUREZA es la resistencia de un material a ser rayado o penetrado superficialmente. Los ensayos de dureza por penetración (Brinell, Vickers, Rockwell) son sencillos, rápidos y prácticamente no destructivos."},
-  {q:"¿Cuál es el material más duro que existe?",opts:["Acero templado","Carburo de tungsteno","Diamante","Cerámica de alúmina"],c:2,fb:"El DIAMANTE es el material más duro que existe. Por eso se utiliza como penetrador en los ensayos de dureza Vickers (pirámide de diamante) y Rockwell C (cono de diamante)."},
-  {q:"¿Qué significa la designación 230 HB 5 2500 10?",opts:["Dureza 230, método Vickers, bola 5 mm, fuerza 2500 N, tiempo 10 s","Dureza 230, método Brinell, bola 5 mm, fuerza 2500 kp, tiempo 10 s","Dureza 230, método Rockwell B, penetrador 5 mm, carga 2500 kp, tiempo 10 s","Dureza 230, método Brinell, bola 2,5 mm, fuerza 500 kp, tiempo 10 s"],c:1,fb:"La designación normalizada Brinell se lee: 230 = valor de dureza · HB = método Brinell · 5 = diámetro de la bola en mm · 2500 = fuerza en kp · 10 = tiempo en segundos."},
-  {q:"¿Qué parámetro del ensayo de tracción indica la rigidez del material?",opts:["Alargamiento de rotura (A%)","Estricción (Z%)","Módulo de elasticidad o de Young (E)","Resistencia a la tracción (Rm)"],c:2,fb:"El MÓDULO DE YOUNG (E) es la pendiente de la zona elástica de la curva tensión-deformación. Representa la rigidez del material: cuanto mayor es E, más rígido es el material. Para el acero, E ≈ 210 GPa."},
-  {q:"¿Qué tipo de entalla puede tener la probeta del ensayo Charpy?",opts:["Solo entalla en forma de V","Solo entalla en forma de U","Entalla en forma de V o en forma de U","No lleva entalla, es una probeta lisa"],c:2,fb:"Las probetas normalizadas del ensayo Charpy llevan una entalla en la parte central para favorecer la rotura por concentración de tensiones. Esta entalla puede ser en forma de V (KCV) o en forma de U (KCU)."},
-  {q:"¿Qué organismos publican las normas ISO?",opts:["Solo organismos nacionales de cada país","La International Organization for Standardization, de alcance mundial","El Comité Europeo de Normalización (CEN)","La American Society for Testing and Materials (ASTM)"],c:1,fb:"ISO (International Organization for Standardization) publica normas de alcance MUNDIAL. Son distintas de las EN (normas europeas del CEN) y de las ASTM (normas americanas)."},
-  {q:"¿Qué representa la resiliencia (KCV o KCU) obtenida en el ensayo Charpy?",opts:["La resistencia máxima del material a tracción","La energía absorbida por unidad de sección hasta la rotura","El módulo de elasticidad del material ensayado","La dureza superficial de la probeta"],c:1,fb:"La RESILIENCIA (KCV o KCU) es la energía absorbida por la probeta por unidad de sección hasta la rotura. Se calcula como E/S₀. Mide la ductilidad o fragilidad del material ante impactos."},
-  {q:"¿Qué fórmula se usa para calcular la dureza Rockwell en materiales blandos (HRB)?",opts:["HRB = 100 − e","HRB = 130 − e","HRB = e / 0,002","HRB = 1,854 · F / d²"],c:1,fb:"Para materiales blandos (escala B, penetrador bola de acero) se usa HRB = 130 − e. Para materiales duros (escala C, cono de diamante) se usa HRC = 100 − e. El valor 'e' se calcula como h/0,002."},
-  {q:"¿Qué aplicación industrial tiene el ensayo de tracción en la construcción metálica?",opts:["Detectar grietas internas en soldaduras","Verificar la dureza superficial de recubrimientos","Certificar las propiedades mecánicas del acero estructural","Comprobar la resistencia a la corrosión de los perfiles"],c:2,fb:"En la CONSTRUCCIÓN METÁLICA el ensayo de tracción se utiliza para certificar las propiedades mecánicas del acero estructural (límite elástico, resistencia a tracción, alargamiento), garantizando que cumple las especificaciones normativas."}
-];
 
-const allR2=[
-  {q:"¿Qué ensayo END es el más adecuado para detectar grietas superficiales en tubería de acero inoxidable antes de pintar?",opts:["Radiografía (RT)","Líquidos Penetrantes (PT)","Ultrasonidos (UT)","Partículas Magnéticas (MT)"],c:1,fb:"Los Líquidos Penetrantes (PT) son el método más rápido y económico para detectar grietas abiertas a la superficie en materiales no porosos. El acero inoxidable no es ferromagnético, descartando las partículas magnéticas."},
-  {q:"¿Qué ensayo END detecta defectos internos volumétricos en soldaduras sin destruir la pieza?",opts:["Inspección Visual (VT)","Partículas Magnéticas (MT)","Ultrasonidos (UT)","Líquidos Penetrantes (PT)"],c:2,fb:"Los Ultrasonidos (UT) son el método END más versátil y potente para detectar defectos internos. Las ondas mecánicas de alta frecuencia (1-15 MHz) se reflejan en las discontinuidades internas."},
-  {q:"¿Qué ensayo END puede aplicarse sobre materiales NO ferromagnéticos como el aluminio?",opts:["Partículas Magnéticas (MT)","Líquidos Penetrantes (PT)","Ambos pueden usarse igual","Ninguno de los dos"],c:1,fb:"Las Partículas Magnéticas (MT) solo funcionan en materiales ferromagnéticos. Los Líquidos Penetrantes (PT) funcionan en cualquier material no poroso, incluido el aluminio."},
-  {q:"¿Qué ensayo END proporciona un registro permanente de la inspección para archivar en el expediente técnico?",opts:["Inspección Visual (VT)","Líquidos Penetrantes (PT)","Radiografía (RT)","Partículas Magnéticas (MT)"],c:2,fb:"La Radiografía (RT) genera una imagen permanente en la placa radiográfica que puede archivarse como registro documental. Es fundamental en sectores donde la trazabilidad es obligatoria."},
-  {q:"¿Cuál es el primer END que siempre debe realizarse antes que cualquier otro?",opts:["Ultrasonidos (UT)","Inspección Visual (VT)","Radiografía (RT)","Partículas Magnéticas (MT)"],c:1,fb:"La Inspección Visual (VT) es siempre el primer ensayo END. Es el más básico, rápido y económico. Permite descartar piezas defectuosas sin equipos especiales."},
-  {q:"¿Qué ensayo END detecta grietas ligeramente subsuperficiales en un eje de acero al carbono?",opts:["Líquidos Penetrantes (PT)","Inspección Visual (VT)","Partículas Magnéticas (MT)","Radiografía (RT)"],c:2,fb:"Las Partículas Magnéticas (MT) detectan discontinuidades superficiales y ligeramente subsuperficiales en materiales ferromagnéticos gracias al campo de fuga magnético."},
-  {q:"¿Qué elemento es imprescindible en el ensayo de ultrasonidos para garantizar la transmisión de la onda?",opts:["Revelador blanco en polvo","Medio acoplante (gel, aceite o agua)","Partículas fluorescentes magnéticas","Película radiográfica sensible"],c:1,fb:"En UT es imprescindible un medio acoplante entre el palpador y la pieza. Sin él, el aire provocaría reflexión total de la onda y no penetraría en el material."},
-  {q:"¿Qué inconveniente importante tiene la Radiografía (RT) en cuanto a seguridad laboral?",opts:["Solo detecta defectos superficiales","Trabaja con radiaciones perjudiciales para la salud","No puede usarse en campo, solo en laboratorio","Es siempre más cara que los ultrasonidos"],c:1,fb:"La Radiografía (RT) utiliza rayos X o radiación gamma, perjudiciales para la salud. Obliga a trabajar en horarios en que el personal habitual no está presente."},
-  {q:"¿Cuál es el principio físico en el que se basa el ensayo de Líquidos Penetrantes?",opts:["Campo magnético de fuga","Reflexión de ondas sonoras de alta frecuencia","Capilaridad del líquido penetrante","Absorción diferencial de rayos X"],c:2,fb:"Los Líquidos Penetrantes se basan en la CAPILARIDAD: un líquido de baja tensión superficial penetra por sí solo en grietas y poros abiertos a la superficie."},
-  {q:"¿Qué norma regula la cualificación y certificación de los operadores de END?",opts:["UNE-EN ISO 3452","UNE-EN ISO 9712","UNE-EN ISO 17636","UNE-EN ISO 9934"],c:1,fb:"La norma UNE-EN ISO 9712:2023 regula la cualificación y certificación del personal de END en tres niveles (Nivel I, II y III). Es la certificación de referencia en España y Europa."},
-  {q:"¿Qué tipo de defectos detecta la Inspección Visual (VT)?",opts:["Defectos internos volumétricos como sopladuras","Solo defectos subsuperficiales","Únicamente defectos superficiales visibles","Defectos a cualquier profundidad"],c:2,fb:"La Inspección Visual (VT) solo detecta imperfecciones SUPERFICIALES visibles. Para detectar defectos internos o subsuperficiales se necesitan otros métodos como UT, RT o PM."},
-  {q:"¿Qué función tiene el revelador en el ensayo de Líquidos Penetrantes?",opts:["Limpiar la superficie antes de aplicar el penetrante","Magnetizar la pieza para atraer partículas","Absorber el líquido retenido en las discontinuidades haciéndolas visibles","Fijar la imagen en la película radiográfica"],c:2,fb:"El REVELADOR absorbe el líquido penetrante retenido en las discontinuidades, haciendo visible la indicación. Suele ser blanco para contrastar con el penetrante rojo."},
-  {q:"¿Sobre qué tipo de materiales funciona el ensayo de Partículas Magnéticas (MT)?",opts:["Cualquier material metálico","Solo materiales no ferrosos como aluminio y cobre","Materiales ferromagnéticos: hierro, acero, níquel y cobalto","Solo aceros inoxidables austeníticos"],c:2,fb:"Las Partículas Magnéticas (MT) solo funcionan en materiales FERROMAGNÉTICOS: hierro, acero al carbono, acero de baja aleación, níquel y cobalto."},
-  {q:"¿Qué tipo de palpadores se usan en el ensayo de ultrasonidos para inspeccionar soldaduras?",opts:["Solo palpadores de incidencia normal","Solo palpadores de incidencia angular","Palpadores de incidencia normal o angular según el defecto a detectar","Únicamente palpadores de inmersión"],c:2,fb:"En UT se usan palpadores de INCIDENCIA NORMAL para defectos paralelos a la superficie e INCIDENCIA ANGULAR para soldaduras, permitiendo detectar defectos verticales como falta de fusión."},
-  {q:"¿Qué ventaja principal tienen los END frente a los ensayos destructivos?",opts:["Proporcionan valores cuantitativos de resistencia y dureza","Permiten inspeccionar el 100% de la producción sin desperdiciar piezas","Son siempre más rápidos que cualquier ensayo destructivo","No requieren personal cualificado para su realización"],c:1,fb:"La principal ventaja de los END es que permiten inspeccionar el 100% de la producción sin desperdiciar ninguna pieza. También pueden aplicarse durante la fabricación y el mantenimiento."},
-  {q:"¿Qué indica en una placa radiográfica una zona más oscura de lo normal?",opts:["Mayor espesor de material en esa zona","Mayor densidad del material en esa zona","Menor absorción de radiación: posible defecto o menor espesor","La placa está sobreexpuesta por error del operador"],c:2,fb:"En RT, una zona MÁS OSCURA indica que ha llegado más radiación a la película: menor absorción, que puede deberse a menor espesor o a la presencia de un defecto (sopladuras, porosidades)."},
-  {q:"¿Qué limitación importante tienen los END respecto a las propiedades mecánicas?",opts:["No pueden detectar defectos superficiales","Generalmente no proporcionan valores cuantitativos de resistencia o dureza","Solo funcionan en materiales metálicos","Requieren siempre instalar la pieza en una máquina universal"],c:1,fb:"Una limitación importante de los END es que generalmente NO proporcionan valores cuantitativos de propiedades mecánicas como resistencia o dureza. Para eso son necesarios los ensayos destructivos."},
-  {q:"¿Qué diferencia hay entre una indicación y un defecto en los END?",opts:["Son exactamente lo mismo, los dos términos son sinónimos","Una indicación siempre es un defecto","Un defecto siempre es una indicación, pero una indicación no siempre es un defecto","Una indicación es más grave que un defecto"],c:2,fb:"Un DEFECTO siempre es una indicación, pero UNA INDICACIÓN NO SIEMPRE ES UN DEFECTO. Para que una indicación sea defecto debe superar los criterios de aceptación de la norma aplicable."},
-  {q:"¿Qué etapa del ensayo de Líquidos Penetrantes elimina el exceso de penetrante de la superficie?",opts:["Aplicación del revelador","Preparación de la superficie","Eliminación del exceso con el eliminador","Observación de la indicación"],c:2,fb:"La etapa de ELIMINACIÓN DEL EXCESO retira el penetrante de la superficie, dejando solo el que ha penetrado en las discontinuidades para que el revelador lo absorba posteriormente."},
-  {q:"¿En qué sectores industriales son fundamentales los END por sus estrictos requisitos de seguridad?",opts:["Solo en la industria del automóvil y la construcción","Nuclear, aeronáutico, ferroviario y petroquímico","Exclusivamente en la industria alimentaria","Solo en la fabricación de herramientas de corte"],c:1,fb:"Los END son fundamentales en sectores con estrictos requisitos de seguridad: industria NUCLEAR, AERONÁUTICA, FERROVIARIA y PETROQUÍMICA, donde un fallo puede tener consecuencias catastróficas."},
-  {q:"¿Qué norma regula las etapas del ensayo de Líquidos Penetrantes?",opts:["UNE-EN ISO 9712","UNE-EN ISO 9934-1","UNE-EN ISO 3452-1","UNE-EN ISO 17636-1"],c:2,fb:"El ensayo de Líquidos Penetrantes está regulado por la norma UNE-EN ISO 3452-1:2022, que establece los principios generales, los productos y las etapas del ensayo."},
-  {q:"¿Qué norma regula el ensayo de Partículas Magnéticas?",opts:["UNE-EN ISO 3452-1","UNE-EN ISO 9934-1","UNE-EN ISO 17636-1","UNE-EN ISO 6892-1"],c:1,fb:"El ensayo de Partículas Magnéticas está regulado por la norma UNE-EN ISO 9934-1:2017, que establece los principios generales, los equipos y los procedimientos de inspección."},
-  {q:"¿Qué norma regula el ensayo radiográfico de soldaduras?",opts:["UNE-EN ISO 9712","UNE-EN ISO 3452-1","UNE-EN ISO 17636-1","UNE-EN ISO 9934-1"],c:2,fb:"El ensayo radiográfico de soldaduras está regulado por la norma UNE-EN ISO 17636-1:2013, que establece los requisitos de la técnica radiográfica con rayos X y gamma."},
-  {q:"¿Qué ventaja tiene la Inspección Visual frente a otros END?",opts:["Detecta defectos internos sin equipos especiales","Es el método más rápido y económico, utilizable en cualquier fase del proceso","Proporciona un registro permanente de todos los defectos encontrados","Puede detectar discontinuidades a cualquier profundidad"],c:1,fb:"La Inspección Visual (VT) es el método más RÁPIDO Y ECONÓMICO de todos los END. No requiere equipos especiales y puede utilizarse en cualquier fase del proceso productivo e incluso en mantenimiento preventivo."},
-  {q:"¿Qué tipos de indicaciones pueden detectarse con los END según su ubicación?",opts:["Solo indicaciones superficiales y subsuperficiales","Solo indicaciones internas volumétricas","Superficiales, subsuperficiales e internas (volumétricas)","Únicamente las abiertas a la superficie exterior"],c:2,fb:"Los END pueden detectar tres tipos de indicaciones: SUPERFICIALES (abiertas a la superficie), SUBSUPERFICIALES (cercanas pero no abiertas) e INTERNAS o VOLUMÉTRICAS (sopladuras, inclusiones, fisuras internas)."}
-];
+<!-- ===== STUDENT WAITING ===== -->
+<div id="student-wait-screen" class="screen">
+  <div style="text-align:center;padding:50px 20px">
+    <div class="wait-icon">⏳</div>
+    <h2 style="font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:2px;margin-bottom:8px">¡Estás dentro!</h2>
+    <p style="color:var(--muted);margin-bottom:20px">Esperando a que el docente inicie el juego...</p>
+    <div class="status-badge status-online" style="margin:0 auto"><div class="status-dot"></div>Conectado</div>
+    <p style="margin-top:24px;font-size:22px;font-weight:700">👋 <span id="student-name-display"></span></p>
+    <div style="margin-top:16px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:12px 18px;display:inline-block">
+      <div style="font-size:12px;color:var(--muted)">Sala</div>
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:4px;color:var(--accent4)" id="student-sala-display"></div>
+    </div>
+  </div>
+</div>
 
-const r3Pairs=[
-  {left:"Líquidos Penetrantes (PT)",right:"Capilaridad — penetra en grietas abiertas al exterior"},
-  {left:"Partículas Magnéticas (MT)",right:"Campo de fuga — solo en materiales ferromagnéticos"},
-  {left:"Radiografía (RT)",right:"Rayos X o γ — imagen permanente en película"},
-  {left:"Ultrasonidos (UT)",right:"Ondas mecánicas 1–15 MHz — detecta defectos internos"},
-  {left:"Inspección Visual (VT)",right:"Ojo humano — primer END, rápido y económico"}
-];
+<!-- ===== LOADING ===== -->
+<div id="loading-screen" class="screen">
+  <div style="text-align:center;padding:80px 20px">
+    <div class="spinner"></div>
+    <div class="loading-text" id="loading-text">Preparando las preguntas...</div>
+    <div style="font-size:13px;color:var(--muted);margin-top:8px" id="loading-sub"></div>
+  </div>
+</div>
 
-const allR4=[
-  {sc:"Ensayo de LP sobre tubería de acero. Se observa una mancha roja difusa de 0,3 mm. Según UNE-EN ISO 3452, ese tipo de indicación puntual queda dentro de los límites de aceptación.",a:"aceptable",fb:"Una indicación NO siempre es un defecto. En este caso está dentro de límites → pieza OK."},
-  {sc:"Inspección por PM de un eje de acero. Aparece una acumulación lineal de partículas de 15 mm. La norma establece que ninguna indicación lineal puede superar 5 mm en esa zona crítica.",a:"defecto",fb:"15 mm > 5 mm permitidos. La indicación supera los criterios de aceptación → DEFECTO."},
-  {sc:"Radiografía de una soldadura a tope. Se observa una zona oscura redondeada de 2 mm de diámetro. La norma permite porosidades aisladas de hasta 3 mm en ese espesor de chapa.",a:"aceptable",fb:"2 mm < 3 mm permitidos. La porosidad no supera el límite → indicación aceptable, pieza OK."},
-  {sc:"Inspección visual de una unión soldada. Se detecta un socavado lateral de 1,8 mm de profundidad a lo largo de 80 mm. La norma limita el socavado a un máximo de 0,5 mm de profundidad.",a:"defecto",fb:"1,8 mm > 0,5 mm permitidos. El socavado supera claramente el límite normativo → DEFECTO."},
-  {sc:"Ultrasonidos de una viga soldada. La señal de eco está 6 dB por debajo del nivel de evaluación fijado por la norma.",a:"aceptable",fb:"Si la señal está por debajo del nivel de evaluación de la norma → indicación no relevante, pieza aceptable."},
-  {sc:"Ensayo de LP sobre una brida de acero inoxidable. Se observa una indicación lineal de 8 mm en la zona de la junta. La norma no permite indicaciones lineales superiores a 3 mm en esa zona.",a:"defecto",fb:"8 mm > 3 mm permitidos. Indicación lineal fuera de norma → DEFECTO."},
-  {sc:"Inspección visual de una viga IPE soldada. Se aprecia una pequeña salpicadura de 1 mm adherida junto al cordón. La norma permite salpicaduras puntuales aisladas de hasta 2 mm.",a:"aceptable",fb:"1 mm < 2 mm permitidos. La salpicadura no supera el límite normativo → indicación aceptable, pieza OK."},
-  {sc:"Ensayo de PM sobre un eje de cigüeñal. Se observa una acumulación de partículas de forma redondeada de 2 mm de diámetro. La norma permite indicaciones redondeadas de hasta 4 mm en esa zona.",a:"aceptable",fb:"2 mm < 4 mm permitidos. La indicación redondeada está dentro de los límites → pieza OK."},
-  {sc:"Radiografía de una unión a solape. Se detecta una zona clara alargada de 12 mm que indica falta de fusión. La norma no acepta indicaciones de falta de fusión de ninguna longitud en uniones estructurales.",a:"defecto",fb:"La falta de fusión es un defecto de especial gravedad en uniones estructurales. Cualquier indicación de este tipo → DEFECTO, rechazo obligatorio."},
-  {sc:"Inspección visual de un cordón de soldadura en ángulo. Se aprecia una irregularidad superficial de 0,2 mm de profundidad en el pie del cordón. La norma permite irregularidades de hasta 0,5 mm.",a:"aceptable",fb:"0,2 mm < 0,5 mm permitidos. La irregularidad está dentro de los límites → indicación aceptable, pieza OK."},
-  {sc:"Ensayo de LP sobre pieza de aluminio fundido. Aparece una indicación lineal de 4 mm en una zona no sometida a esfuerzo. La norma permite hasta 2 mm en esa zona.",a:"defecto",fb:"4 mm > 2 mm permitidos. Aunque la zona no esté sometida a esfuerzo, la indicación supera el límite → DEFECTO."},
-  {sc:"Ultrasonidos de un recipiente a presión. La señal de eco detectada supera en 4 dB el nivel de referencia fijado por la norma, que establece rechazo para señales que superen dicho nivel.",a:"defecto",fb:"La señal supera el nivel de referencia → DEFECTO. En recipientes a presión los criterios son especialmente estrictos."},
-  {sc:"Inspección visual de perfiles estructurales tras soldadura. Se observan marcas de arco eléctrico de 1,5 mm fuera del cordón. La norma no permite marcas de arco fuera de la zona de soldadura.",a:"defecto",fb:"Las marcas de arco fuera de la zona de soldadura no están permitidas, independientemente de su tamaño → DEFECTO."},
-  {sc:"Ensayo de PM sobre un raíl ferroviario. Se detectan dos indicaciones redondeadas de 1,5 mm separadas 20 mm entre sí. La norma permite indicaciones aisladas de hasta 3 mm.",a:"aceptable",fb:"Ambas indicaciones son de 1,5 mm < 3 mm y están suficientemente separadas → indicaciones aceptables, pieza OK."},
-  {sc:"Radiografía de soldadura en tubería de alta presión. Se observa una inclusión de escoria alargada de 6 mm. La norma permite inclusiones alargadas de hasta 4 mm en ese espesor.",a:"defecto",fb:"6 mm > 4 mm permitidos. La inclusión de escoria supera el límite → DEFECTO."},
-  {sc:"Inspección visual de una estructura metálica soldada en taller. Se detecta un poro abierto de 0,8 mm en la superficie del cordón. La norma permite porosidades abiertas aisladas de hasta 1,5 mm.",a:"aceptable",fb:"0,8 mm < 1,5 mm permitidos. El poro superficial está dentro de los límites → indicación aceptable, pieza OK."},
-  {sc:"Ensayo de LP sobre componente de acero inoxidable austenítico. Se detecta una indicación lineal de 1 mm en zona de alta responsabilidad. La norma no acepta ninguna indicación lineal en esa zona.",a:"defecto",fb:"En zonas de alta responsabilidad la norma puede establecer criterio cero para indicaciones lineales → DEFECTO aunque sea de 1 mm."},
-  {sc:"Ultrasonidos de una placa de acero laminado. Se detecta una señal de eco cuya amplitud está 2 dB por debajo del nivel de evaluación. La norma no requiere evaluación por debajo de ese umbral.",a:"aceptable",fb:"La señal está por debajo del umbral de evaluación → no requiere acción. Indicación no relevante, pieza aceptable."},
-  {sc:"Inspección visual de un cordón de soldadura. Se observa porosidad superficial distribuida en una zona de 30 mm con varios poros de 0,5 mm. La norma no permite porosidad distribuida en longitudes superiores a 20 mm.",a:"defecto",fb:"Aunque cada poro individualmente sería aceptable, la distribución en 30 mm > 20 mm permitidos → DEFECTO conjunto."},
-  {sc:"Ensayo de PM sobre un componente de acero forjado. Aparece una indicación redondeada de 0,5 mm. La norma permite indicaciones redondeadas de hasta 2 mm en esa zona.",a:"aceptable",fb:"0,5 mm < 2 mm permitidos. La indicación redondeada está claramente dentro de los límites → indicación aceptable, pieza OK."}
-];
+<!-- ===== COUNTDOWN ===== -->
+<div id="countdown-screen" class="screen">
+  <div class="cd-num" id="cd-num" style="text-align:center">3</div>
+  <div class="cd-lbl" style="text-align:center">PREPARADO...</div>
+</div>
 
-function rnd(min,max,dec){return Math.round((Math.random()*(max-min)+min)*Math.pow(10,dec))/Math.pow(10,dec);}
-function genBrinell(){
-  const D=5,t=15;
-  const Fval=[100,150,200,250,300][Math.floor(Math.random()*5)];
-  const d=rnd(1.5,3.5,1);
-  const HB=Math.round(2*Fval/(Math.PI*D*(D-Math.sqrt(D*D-d*d)))*10)/10;
-  const w=[Math.round(HB*1.22*10)/10,Math.round(HB*0.75*10)/10,Math.round(HB*1.55*10)/10];
-  const opts=shuffle([HB,...w]).map(v=>v+" HB");
-  return{type:"Dureza BRINELL",badge:"🔵",
-    html:`<p>Ensayo de dureza <strong>BRINELL</strong>: bola <span class="dato">D = ${D} mm</span>, carga <span class="dato">F = ${Fval} kp</span>, tiempo <span class="dato">t = ${t} s</span>, huella <span class="dato">d = ${d} mm</span>.</p><p style="margin-top:8px">📐 <strong>HB = 2F / [π·D·(D − √(D²−d²))]</strong></p><p style="margin-top:4px">¿Cuál es la dureza Brinell normalizada?</p>`,
-    opts,correct:opts.findIndex(o=>o===HB+" HB"),
-    fb:`HB = 2×${Fval} / [π×${D}×(${D}−√(${D*D}−${d*d}))] = <strong>${HB} HB</strong> → Designación: ${HB} HB ${D} ${Fval} ${t}`};
-}
-function genVickers(){
-  const F=[10,20,30,40,50][Math.floor(Math.random()*5)];
-  const d1=rnd(0.30,0.70,2),d2=rnd(0.30,0.70,2);
-  const dm=Math.round((d1+d2)/2*100)/100;
-  const HV=Math.round(1.854*F/(dm*dm));
-  const w=[Math.round(HV*1.18),Math.round(HV*0.82),Math.round(HV*1.4)];
-  const opts=shuffle([HV,...w]).map(v=>v+" HV");
-  return{type:"Dureza VICKERS",badge:"🟡",
-    html:`<p>Ensayo de dureza <strong>VICKERS</strong>: diagonales <span class="dato">d₁ = ${d1} mm</span> y <span class="dato">d₂ = ${d2} mm</span>, fuerza <span class="dato">F = ${F} Kp</span>.</p><p style="margin-top:8px">📐 <strong>d_m = (d₁+d₂)/2 &nbsp;·&nbsp; HV = 1,854 × F / d_m²</strong></p>`,
-    opts,correct:opts.findIndex(o=>o===HV+" HV"),
-    fb:`d_m = (${d1}+${d2})/2 = ${dm} mm → HV = 1,854×${F}/${dm}² = <strong>${HV} HV</strong> → Designación: ${HV} HV ${F}`};
-}
-function genRockwell(){
-  const tipo=Math.random()>0.5?"C":"B";
-  const h1=rnd(0.05,0.15,3);
-  const h3=rnd(h1+0.02,h1+0.12,3);
-  const h=Math.round((h3-h1)*1000)/1000;
-  const e=Math.round(h/0.002*10)/10;
-  const HR=tipo==="C"?Math.round((100-e)*10)/10:Math.round((130-e)*10)/10;
-  const label=tipo==="C"?"HRC":"HRB";
-  const pen=tipo==="C"?"Cono de diamante (materiales duros)":"Bola de acero (materiales blandos)";
-  const form=tipo==="C"?"HRC = 100 − e":"HRB = 130 − e";
-  const w=[Math.round((HR+9)*10)/10,Math.round((HR-9)*10)/10,Math.round((HR+18)*10)/10];
-  const opts=shuffle([HR,...w]).map(v=>v+" "+label);
-  return{type:`Dureza ROCKWELL ${label}`,badge:"🔴",
-    html:`<p>Ensayo <strong>ROCKWELL ${label}</strong> (${pen}): profundidad con precarga <span class="dato">h₁ = ${h1} mm</span>, tras carga y retirada <span class="dato">h₃ = ${h3} mm</span>.</p><p style="margin-top:8px">📐 <strong>h = h₃−h₁ &nbsp;·&nbsp; e = h/0,002 &nbsp;·&nbsp; ${form}</strong></p>`,
-    opts,correct:opts.findIndex(o=>o===HR+" "+label),
-    fb:`h = ${h3}−${h1} = ${h} mm → e = ${h}/0,002 = ${e} → ${form} = <strong>${HR} ${label}</strong>`};
-}
-function genCharpy(){
-  const m=[10,20,30,40][Math.floor(Math.random()*4)];
-  const h1=rnd(0.8,1.5,1);
-  const h2=rnd(0.3,parseFloat((h1-0.2).toFixed(1)),1);
-  const E=Math.round(m*10*(h1-h2)*10)/10;
-  const S0=80;
-  const KCVmm=Math.round(E/S0*1000)/1000;
-  const KCV=Math.round(KCVmm*100*100)/100;
-  const w=[Math.round(KCV*1.4*100)/100,Math.round(KCV*0.6*100)/100,Math.round(KCV*2.1*100)/100];
-  const opts=shuffle([KCV,...w]).map(v=>v+" J/cm²");
-  return{type:"Resiliencia CHARPY",badge:"⚡",
-    html:`<p>Péndulo de <strong>Charpy</strong>: probeta <span class="dato">10×10 mm</span>, entalla <span class="dato">2 mm</span>. Maza <span class="dato">m = ${m} kg</span>, altura inicial <span class="dato">h₁ = ${h1} m</span>, altura final <span class="dato">h₂ = ${h2} m</span>. g = 10 m/s².</p><p style="margin-top:8px">📐 <strong>E = m·g·(h₁−h₂) &nbsp;·&nbsp; S₀ = 10×8 = 80 mm² &nbsp;·&nbsp; KCV = E/S₀</strong></p><p style="margin-top:4px;font-size:.8rem;color:#aaa">Recuerda convertir a J/cm² (1 cm² = 100 mm²)</p>`,
-    opts,correct:opts.findIndex(o=>o===KCV+" J/cm²"),
-    fb:`E = ${m}×10×(${h1}−${h2}) = ${E} J · S₀ = 80 mm² · KCV = ${E}/80 = ${KCVmm} J/mm² × 100 = <strong>${KCV} J/cm²</strong>`};
-}
-function generateR5(){
-  const pool=[genBrinell(),genVickers(),genRockwell(),genCharpy()];
-  pool.push([genBrinell,genVickers,genRockwell,genCharpy][Math.floor(Math.random()*4)]());
-  return shuffle(pool);
-}
+<!-- ===== TEACHER QUESTION ===== -->
+<div id="teacher-question-screen" class="screen">
+  <div class="teacher-hud">
+    <div class="teacher-qnum" id="t-qnum">Pregunta 1 / 10</div>
+    <div class="timer-ring">
+      <svg viewBox="0 0 62 62" width="62" height="62">
+        <circle class="track" cx="31" cy="31" r="26"/>
+        <circle class="fill" id="t-timer-fill" cx="31" cy="31" r="26"/>
+      </svg>
+      <div class="timer-num" id="t-timer-num">30</div>
+    </div>
+    <div class="teacher-score-col"><span id="t-resp-count">0</span> resp.</div>
+  </div>
+  <div class="teacher-layout">
+    <div class="teacher-main">
+      <div class="teacher-q-card">
+        <div class="teacher-q-text" id="t-q-text"></div>
+        <div class="teacher-ans-grid" id="t-ans-grid"></div>
+      </div>
+      <div class="live-resp" id="live-resp">
+        <div class="live-resp-title">Respuestas recibidas</div>
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:36px;color:var(--accent);text-align:center;padding:8px 0" id="resp-total-big">0 / 0</div>
+        <div class="resp-total" id="resp-total" style="text-align:center">Esperando respuestas...</div>
+      </div>
+      <div style="display:flex;justify-content:flex-end;margin-top:12px">
+        <button class="btn btn-primary" id="next-q-btn" style="display:none">SIGUIENTE →</button>
+        <button class="btn btn-danger" id="reveal-btn">REVELAR RESPUESTA</button>
+      </div>
+    </div>
+    <div class="live-ranking">
+      <div class="live-ranking-title">
+        <span>🏆 Ranking</span>
+        <div class="status-badge status-online" style="font-size:10px;padding:2px 8px"><div class="status-dot"></div>En vivo</div>
+      </div>
+      <div id="live-lb-list"><div style="color:var(--muted);font-size:12px;text-align:center;padding:16px">Esperando puntuaciones...</div></div>
+    </div>
+  </div>
+</div>
 
-let state={};
-function startGame(){
-  const name=document.getElementById('input-name').value.trim();
-  if(!name){alert('Por favor, introduce tu nombre antes de empezar.');return;}
-  const r1=shuffle([...allR1]).slice(0,20);
-  const r2=shuffle([...allR2]).slice(0,20);
-  const r4=shuffle([...allR4]).slice(0,15);
-  const r5=generateR5();
-  state={name,round:1,qIndex:0,score:0,roundScores:[0,0,0,0,0],
-    r1,r2,r4,r5,log:[],r3Evaluated:false,
-    matchSelected:{left:null,right:null},r3Selections:{},r3Left:null,r3Right:null,
-    totalQ:r1.length+r2.length+1+r4.length+r5.length};
-  showScreen('screen-game');renderQuestion();
+<!-- ===== STUDENT QUESTION ===== -->
+<div id="student-question-screen" class="screen">
+  <div class="hud">
+    <div class="hud-player">Jugador: <span id="s-hud-name">—</span></div>
+    <div class="prog-wrap"><div class="prog-bar" id="s-prog-bar"></div></div>
+    <div class="hud-score" id="s-hud-score">0 pts</div>
+  </div>
+  <div class="q-hdr">
+    <div class="q-num" id="s-qnum">Pregunta 1 / 10</div>
+    <div class="timer-ring">
+      <svg viewBox="0 0 62 62" width="62" height="62">
+        <circle class="track" cx="31" cy="31" r="26"/>
+        <circle class="fill" id="s-timer-fill" cx="31" cy="31" r="26"/>
+      </svg>
+      <div class="timer-num" id="s-timer-num">30</div>
+    </div>
+  </div>
+  <div class="q-card"><div class="q-text" id="s-q-text"></div></div>
+  <div class="ans-grid" id="s-ans-grid"></div>
+  <div class="feedback" id="s-feedback"></div>
+</div>
+
+<!-- ===== WAIT ANSWER (student answered, waiting teacher) ===== -->
+<div id="wait-answer-screen" class="screen">
+  <div style="text-align:center;padding:40px 20px">
+    <span class="wait-icon">✅</span>
+    <h2 style="font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:2px;margin-bottom:8px">¡Respuesta enviada!</h2>
+    <p style="color:var(--muted)">Esperando al resto de compañeros...</p>
+    <div class="feedback show" id="wait-feedback" style="margin-top:20px;display:block"></div>
+    <div style="margin-top:20px;font-family:'Bebas Neue',sans-serif;font-size:18px;color:var(--accent)" id="wait-pts"></div>
+  </div>
+</div>
+
+<!-- ===== RESULTS ===== -->
+<div id="results-screen" class="screen">
+  <div class="res-title">🏁 Resultado</div>
+  <div class="res-sub" id="res-sub"></div>
+  <div class="card">
+    <div class="score-big" id="final-score">0</div>
+    <div class="score-lbl">puntos totales</div>
+    <div class="stats-grid">
+      <div class="stat-box"><div class="stat-val" id="s-ok">0</div><div class="stat-lbl">Correctas</div></div>
+      <div class="stat-box"><div class="stat-val" id="s-fail">0</div><div class="stat-lbl">Falladas</div></div>
+      <div class="stat-box"><div class="stat-val" id="s-pct">0%</div><div class="stat-lbl">Aciertos</div></div>
+    </div>
+    <div class="rank-msg" id="rank-msg"></div>
+  </div>
+  <div class="lb-section">
+    <div class="lb-title">🏆 Ranking de sala</div>
+    <div id="lb-list"></div>
+  </div>
+  <div class="lb-section" id="rev-section">
+    <div class="lb-title">📋 Repaso de respuestas</div>
+    <div id="rev-items"></div>
+  </div>
+  <div style="text-align:center;margin-top:20px">
+    <button class="btn btn-outline" id="restart-btn">↺ NUEVA PARTIDA</button>
+  </div>
+</div>
+
+<!-- ===== TEACHER RESULTS ===== -->
+<div id="teacher-results-screen" class="screen">
+  <div class="res-title">🏆 Ranking Final</div>
+  <div class="res-sub" id="t-res-sub"></div>
+  <div class="lb-section teacher-lb">
+    <div id="t-lb-list"></div>
+  </div>
+  <div style="text-align:center;margin-top:20px">
+    <button class="btn btn-outline" id="t-restart-btn">↺ NUEVA PARTIDA</button>
+  </div>
+</div>
+
+</div><!-- /app -->
+
+<!-- Firebase -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, set, get, update, onValue, push, remove, off }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+// ============================================================
+//  FIREBASE CONFIG
+// ============================================================
+const firebaseConfig = {
+  apiKey: "AIzaSyBan49LeZ2lWkBZUKpwA4WMT3m633UStLM",
+  authDomain: "dpmc---reapaso-general-25-26.firebaseapp.com",
+  databaseURL: "https://dpmc---reapaso-general-25-26-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "dpmc---reapaso-general-25-26",
+  storageBucket: "dpmc---reapaso-general-25-26.firebasestorage.app",
+  messagingSenderId: "1029617533699",
+  appId: "1:1029617533699:web:b4e103f4710c9e0916df36"
+};
+const fbApp = initializeApp(firebaseConfig);
+const db = getDatabase(fbApp);
+
+// ============================================================
+//  TEMARIO
+// ============================================================
+const UT_CONTENT = {"UT1.1":"UT1.1 \u2013 TOLERANCIAS DIMENSIONALES Y GEOM\u00c9TRICAS\n\nNORMALIZACI\u00d3N: La normalizaci\u00f3n surge por la necesidad de unificar los sistemas existentes y as\u00ed garantizar la INTERCAMBIABILIDAD. Existe ISO, UNE (Una Norma Espa\u00f1ola) y DIN (normas alemanas).\n\nINTERCAMBIABILIDAD: Garantizar que el ensamblaje ser\u00e1 correcto incluso cuando se escoge al azar una pieza entre el total de un lote. Ventajas: reemplazar piezas f\u00e1cilmente, reducci\u00f3n de costes, menos errores en montaje.\n\nTOLERANCIAS DIMENSIONALES: Diferencia admisible de medidas a partir de un valor nominal. Unidad: \u00b5m.\nConceptos: EJE (elemento cil\u00edndrico), AGUJERO (zona que alberga el eje), MEDIDA NOMINAL (Mn), MEDIDA EFECTIVA (Me), MEDIDA M\u00c1XIMA (Mmax), MEDIDA M\u00cdNIMA (Mmin), DIFERENCIA SUPERIOR (ds=Mmax-Mn), DIFERENCIA INFERIOR (di=Mmin-Mn), TOLERANCIA (t=Mmax-Mmin=ds-di).\n\nAJUSTES:\n- AJUSTE CON JUEGO: siempre existe holgura. Agujero siempre mayor que eje. Juego m\u00e1ximo: Jmax=Mmax(agujero)-Mmin(eje). Juego m\u00ednimo: Jmin=Mmin(agujero)-Mmax(eje).\n- AJUSTE CON APRIETO: eje mayor que agujero. Uni\u00f3n forzada con maza o prensa. Aprieto m\u00e1ximo: Amax=Mmax(eje)-Mmin(agujero).\n- AJUSTE INDETERMINADO: puede haber juego o aprieto seg\u00fan las piezas.\n\nSISTEMA ISO DE TOLERANCIAS:\n- CALIDAD DE TOLERANCIA: 20 calidades (IT01 a IT18). Menor IT = menor tolerancia = mayor dificultad de fabricaci\u00f3n.\n- POSICI\u00d3N: letra may\u00fascula para agujeros, min\u00fascula para ejes.\n- SISTEMA DE AGUJERO BASE: agujero siempre H, var\u00eda el eje.\n- SISTEMA DE EJE BASE: eje siempre h, var\u00eda el agujero.\n\nTOLERANCIAS GEOM\u00c9TRICAS: Controlan forma, orientaci\u00f3n, posici\u00f3n y oscilaci\u00f3n. Ejemplos: rectitud, planitud, circularidad, cilindricidad, paralelismo, perpendicularidad, coaxialidad.","UT2.1":"UT2.1 \u2013 MATERIALES DE MECANIZADO Y CONFORMADO\n\nPROPIEDADES MEC\u00c1NICAS:\n- DUREZA: Resistencia a ser penetrado o rayado. Los tratamientos t\u00e9rmicos afectan directamente a la dureza. El diamante es el material m\u00e1s duro.\n- TENACIDAD: Energ\u00eda absorbida hasta romperse. El bronce es muy tenaz.\n- FRAGILIDAD: Lo contrario a la tenacidad. El vidrio es muy fr\u00e1gil.\n- ELASTICIDAD: Recupera forma al cesar fuerzas. Superar el l\u00edmite el\u00e1stico produce deformaci\u00f3n permanente.\n- PLASTICIDAD: Deformaci\u00f3n permanente sin rotura. DUCTILIDAD: en hilos (cobre). MALEABILIDAD: en l\u00e1minas (aluminio).\n- FATIGA: Rotura bajo cargas din\u00e1micas c\u00edclicas inferiores a la rotura est\u00e1tica.\n- MAQUINABILIDAD: Propiedad para ser mecanizado por arranque de viruta.\n- FORJABILIDAD: Capacidad de sufrir deformaciones pl\u00e1sticas sin romperse.\n- TEMPLABILIDAD: Propiedad de formar estructura martens\u00edtica.\n\nACERO: Aleaci\u00f3n Fe-C con 0,05%-2% de carbono.\nCLASIFICACI\u00d3N:\n- Aceros no aleados: solo Fe y C. Calidad y especiales.\n- Aceros inoxidables: Cr >10,5%, C <1,2%. Ferr\u00edticos (12-18%Cr, magn\u00e9ticos), Martens\u00edticos, Austen\u00edticos (18%Cr+8%Ni, los m\u00e1s usados).\n- Aceros aleados: con Mn (mejora tenacidad), Ni (aumenta tenacidad), Cr (dureza y resistencia al desgaste), Mo (alta temperatura).\n\nFUNDICIONES: Fe-C con >2% de carbono.\n- Fundici\u00f3n blanca: cementita, muy dura y fr\u00e1gil.\n- Fundici\u00f3n gris: grafito laminar, buena maquinabilidad.\n- Fundici\u00f3n nodular: grafito esferoidal, buenas propiedades mec\u00e1nicas.\n\nMETALES NO F\u00c9RREOS:\n- Aluminio: ligero, resistente a la corrosi\u00f3n.\n- Cobre: alta conductividad el\u00e9ctrica y t\u00e9rmica. Lat\u00f3n (Cu+Zn), Bronce (Cu+Sn).\n- Titanio: excelente relaci\u00f3n resistencia\/peso. Aeron\u00e1utica.","UT2.2":"UT2.2 \u2013 TEOR\u00cdA DE LOS MATERIALES Y SUS TRATAMIENTOS\n\nESTADOS ALOTR\u00d3PICOS DEL HIERRO:\n- Hierro \u03b1 (Alfa): temperatura ambiente, red BCC, magn\u00e9tico, no disuelve carbono.\n- Hierro \u03b2 (Beta): 768-900\u00baC, BCC, no magn\u00e9tico.\n- Hierro \u03b3 (Gamma): 900-1400\u00baC, red FCC, disuelve hasta 2% de C, forma AUSTENITA.\n- Hierro \u03b4 (Delta): 1400-1539\u00baC, BCC, sin inter\u00e9s industrial.\n\nCONSTITUYENTES ESTRUCTURALES:\n- AUSTENITA: soluci\u00f3n s\u00f3lida de C en Fe\u03b3 (FCC). Tenaz y d\u00factil. No magn\u00e9tica. Punto de partida de tratamientos t\u00e9rmicos.\n- FERRITA: soluci\u00f3n s\u00f3lida de C en Fe\u03b1 (BCC). Muy blanda y maleable. Bajo contenido en C (0,008-0,025%).\n- CEMENTITA (Fe3C): 6,67% C. Muy dura y fr\u00e1gil.\n- PERLITA: mezcla de ferrita (86,5%) y cementita (13,5%) en l\u00e1minas alternas. Propiedades intermedias.\n- MARTENSITA: enfriamiento brusco de austenita. Muy dura. Segundo constituyente m\u00e1s duro tras cementita.\n- BAINITA: transformaci\u00f3n isot\u00e9rmica de austenita entre 215-540\u00baC.\n\nDIAGRAMA Fe-C: Herramienta para entender transformaciones seg\u00fan composici\u00f3n y temperatura. Punto eutecoide: 0,8%C a 727\u00baC. Aceros: 0-2%C. Fundiciones: >2%C.\n\nTRATAMIENTOS T\u00c9RMICOS:\n- RECOCIDO: calentamiento + enfriamiento lento. Reduce dureza, mejora ductilidad, elimina tensiones.\n- TEMPLE: calentamiento a temperatura de austenizaci\u00f3n + enfriamiento brusco (agua, aceite). Genera martensita. M\u00e1xima dureza y fragilidad.\n- REVENIDO: tras el temple, calentamiento moderado (150-650\u00baC). Reduce fragilidad manteniendo dureza.\n- CEMENTACI\u00d3N: introduce C en la superficie de aceros de bajo carbono. Capa dura + n\u00facleo tenaz.\n- NITRURACI\u00d3N: introduce N en la superficie. Alta dureza superficial sin temple posterior.\n\nENSAYOS:\n- TRACCI\u00d3N: l\u00edmite el\u00e1stico, resistencia a la rotura, alargamiento.\n- DUREZA: Brinell (HB, bola de acero), Vickers (HV, pir\u00e1mide de diamante), Rockwell (HRC cono de diamante, HRB bola).\n- CHARPY: mide tenacidad (energ\u00eda de rotura por impacto).\n- FATIGA: cargas c\u00edclicas repetidas.","UT3.1":"UT3.1 \u2013 PRINCIPIOS DEL MECANIZADO\n\nM\u00c1QUINA-HERRAMIENTA (MH): Sustituye el trabajo manual por procedimientos mec\u00e1nicos. Genera superficies mediante movimientos de la pieza y herramienta.\n\nMOVIMIENTOS FUNDAMENTALES:\n- MOVIMIENTO DE CORTE (Mc): movimiento principal. Velocidad de corte. Unidades: m\/min.\n- MOVIMIENTO DE AVANCE (Ma): permite arranque continuo de viruta. Unidades: mm\/rev.\n- MOVIMIENTO DE PENETRACI\u00d3N (Mp): determina la profundidad de corte. Unidades: mm.\n\nSISTEMA DE EJES: X (horizontal), Y (perpendicular), Z (paralelo al husillo). A, B, C: giros alrededor de X, Y, Z.\n\nHERRAMIENTAS DE CORTE - EVOLUCI\u00d3N: Acero HSS (1900) \u2192 Widia\/carburo de tungsteno (1926) \u2192 Recubrimientos (1970) \u2192 Cer\u00e1mica, CBN, PCD.\n\nCLASIFICACION ISO DE MATERIALES DE PIEZA:\n- P (Azul): Acero. El m\u00e1s empleado.\n- M (Amarillo): Acero inoxidable. Mala maquinabilidad. Viruta dura.\n- K (Rojo): Fundici\u00f3n. Buena maquinabilidad. Viruta corta.\n- N (Verde): No f\u00e9rreos. Aluminio (mala maquinabilidad), Bronce (buena).\n- S (Naranja): Superaleaciones termorresistentes.\n- H (Gris): Materiales endurecidos 45-65 HRc.\n\nGEOMETR\u00cdA DE HERRAMIENTA: \u00e1ngulo de desprendimiento (\u03b3), \u00e1ngulo de incidencia (\u03b1), \u00e1ngulo de filo (\u03b2).\n\nFORMAS COMERCIALES DE PLAQUITAS: C (rombo 80\u00ba), D (rombo 55\u00ba), S (cuadrada), T (triangular), R (circular), W (trig\u00f3nal).\n\nPAR\u00c1METROS DE CORTE: Velocidad de corte (Vc, m\/min), Avance (f, mm\/rev), Profundidad de pasada (ap, mm).","UT3.2":"UT3.2 \u2013 LIMADO\n\nINTRODUCCI\u00d3N: Procedimiento antiguo de arranque de viruta. Objetivo: desbastar\/acabar superficies de piezas que no pueden mecanizarse en m\u00e1quinas o resulta m\u00e1s econ\u00f3mico. Trabajo laborioso de producci\u00f3n muy peque\u00f1a.\n\nHERRAMIENTA - LA LIMA: Acero templado en sus caras activas. Partes: espiga, tal\u00f3n, cuerpo, punta.\nFORMA: plana, cuadrada, triangular, redonda, media ca\u00f1a, cuchillo.\nTAMA\u00d1O: longitud comercial en pulgadas: 3\", 4\", 5\", 6\", 8\", 12\", 14\", 16\".\nPICADO: rugosidad de las caras. Tipos: simple, doble, escofina.\nGRADO DE CORTE (dientes\/cm): Basta 8-10, Semifina 12-18, Fina 20-30, Extrafina >30.\n\n\u00c1NGULOS PRINCIPALES:\n- \u00c1ngulo de incidencia (A): 35\u00ba.\n- \u00c1ngulo de desprendimiento (C): 5\u00ba.\n- \u00c1ngulo de corte (D): 50\u00ba. A+C+D=90\u00ba.\n\nT\u00c9CNICA DE LIMADO:\n- Altura del tornillo de banco: condici\u00f3n indispensable.\n- Sujeci\u00f3n de la pieza: influye notablemente en la operaci\u00f3n.\n- Posici\u00f3n del operario: pies fijos, rodilla izquierda ligeramente doblada.\n- Desplazamiento: 1\/3 de su anchura por pasada. Sin presi\u00f3n en el retroceso.\n- Inclinaci\u00f3n: 45\u00ba para piezas normales, 70\u00ba para piezas anchas, 20\u00ba para estrechas.\n- Limado en cruz: control visual eficiente, elimina ondulaciones.","UT3.3":"UT3.3 \u2013 ASERRADO\n\nINTRODUCCI\u00d3N: Operaci\u00f3n de desbaste por arranque de viruta para cortar material parcial o totalmente. R\u00e1pido y con poca p\u00e9rdida de material. Tipos industriales: sierras alternativas, circulares y de cinta.\n\nHERRAMIENTA: HOJA DE SIERRA + ARCO.\nHOJA DE SIERRA:\n- Tama\u00f1o: distancia centro a centro de agujeros. Medidas: 250, 275, 300, 350 mm. Espesor: 0,7-0,8mm. Anchura: 13-15mm (un canto), 25mm (dos cantos).\n- Dentado: ondulado o alternado para evitar rozamiento lateral.\n- Grado de corte: Basto 6-7 dientes\/cm, Medio 8-9 dientes\/cm, Fino 12-13 dientes\/cm.\n- Material: acero al carbono o acero al carbono aleado.\n- \u00c1ngulo de incidencia: ~45\u00ba. \u00c1ngulo de desprendimiento: pr\u00e1cticamente nulo.\nARCO DE SIERRA: soporte de acero con mango, tuerca de palomilla y enganches. La hoja puede montarse en el mismo plano del arco o perpendicular.\n\nT\u00c9CNICA DE ASERRADO:\n1. Iniciar con peque\u00f1a mu\u00e9sca en la esquina opuesta al operario.\n2. \u00c1ngulo de ataque inicial: 20-30\u00ba.\n3. 50 golpes\/min para materiales blandos, 30 golpes\/min para materiales duros.\n4. Al romper la hoja: usar una ya usada para continuar en la ranura existente.\n5. Tubos: girar el tubo a medida que la sierra llega a la pared inferior.\n6. Perfiles: empezar por la parte de mayor espesor.","UT3.4":"UT3.4 \u2013 TALADRADO\n\nINTRODUCCI\u00d3N: Taladrar = producir agujeros cil\u00edndricos o c\u00f3nicos usando una broca. Tipos: agujero pasante y agujero ciego.\n\nTALADRADORA: M\u00e1quina herramienta con movimiento de rotaci\u00f3n de broca + avance (manual o autom\u00e1tico).\n- Movimiento de corte (Mc): rotaci\u00f3n de broca. Velocidad de corte Vc en m\/min.\n- Movimiento de avance (Ma): avance en mm\/rev.\n\nTIPOS DE TALADRADORAS:\n- De columna: husillo fijo, para piezas peque\u00f1as. Componentes: bancada, columna, caja de engranajes, motor, husillo (agujero c\u00f3nico), mesa, placa de asiento.\n- Radial: brazo radial que permite colocar el husillo en cualquier posici\u00f3n. Para piezas grandes.\n- De husillos m\u00faltiples: para secuencias de operaciones sin cambiar herramienta.\n\nBROCA HELICOIDAL:\n- Mango: cil\u00edndrico hasta 12-13mm, c\u00f3nico para mayores di\u00e1metros.\n- Cuerpo: ranuras helicoidales que forman los labios de corte.\n- Punta: semi\u00e1ngulo de punta t\u00edpico 59\u00ba por lado = 118\u00ba total.\n\nOTRAS HERRAMIENTAS: Escariador (acabado y calibrado), macho de roscar (rosca interior), avellanador (cono superficial).\n\nPAR\u00c1METROS DE CORTE: Vc=(\u03c0\u00b7D\u00b7n)\/1000 (m\/min). Avance en mm\/rev. Profundidad ap=D\/2.\n\nOPERACIONES RELACIONADAS: Avellanado (alojamiento c\u00f3nico para tornillo), escariado (calibrado fino), taladrado profundo (con refrigeraci\u00f3n), roscado interior (machos de roscar).","UT3.5":"UT3.5 \u2013 TORNEADO\n\nINTRODUCCI\u00d3N: Mecanizado de superficies de revoluci\u00f3n (cilindros, conos, esferas, roscas) en superficies exteriores e interiores. Dos movimientos: rotaci\u00f3n de pieza + avance de herramienta.\n\nCONSTITUCI\u00d3N DEL TORNO:\n- BANCADA: soporte con gu\u00edas para contracabezal y carro.\n- CABEZAL FIJO: motor, husillo, selectores de velocidad y avance, sujecci\u00f3n de pieza.\n- CONTRACABEZAL: apoyo de piezas largas, sujecci\u00f3n de brocas. Desplazable a lo largo de la bancada.\n- CARROS PORTAHERRAMIENTAS: carro principal (longitudinal) y transversal.\n- SISTEMAS DE SUJECI\u00d3N: plato de tres garras (autocentrante), plato de cuatro garras, entre puntos, luneta fija\/m\u00f3vil.\n\nMOVIMIENTOS DE TRABAJO:\n- MOVIMIENTO DE CORTE: rotaci\u00f3n de la pieza. Motor + poleas + engranajes + husillo.\n- MOVIMIENTO DE AVANCE: desplazamiento longitudinal (cilindrado) o transversal (refrentado).\n- MOVIMIENTO DE PROFUNDIDAD DE PASADA: cantidad de material por pasada.\n\nPAR\u00c1METROS DE TRABAJO:\n- VELOCIDAD DE CORTE: Vc=(\u03c0\u00b7D\u00b7n)\/1000 (m\/min)\n- REVOLUCIONES: n=(Vc\u00b71000)\/(\u03c0\u00b7D) (rpm)\n- VELOCIDAD DE AVANCE: Vf=f\u00b7n (mm\/min)\n- TIEMPO DE MECANIZADO: tm=L\/(f\u00b7n) (min)\n\nOPERACIONES DE TORNEADO:\n- CILINDRADO: reducci\u00f3n de di\u00e1metro exterior. Avance longitudinal.\n- REFRENTADO: cara plana perpendicular al eje. Avance transversal.\n- TALADRADO EN TORNO: broca en contracabezal.\n- ROSCADO: rosca exterior o interior.\n- RANURADO: canal o garganta en la pieza.\n- TRONCHADO: corte total de la pieza.\n- CONICADO: cono exterior mediante carro auxiliar girado o desplazamiento del contracabezal."};
+
+const UT_META = {
+  "UT1.1":{icon:"📐",name:"Tolerancias Dimensionales y Geométricas"},
+  "UT2.1":{icon:"🔩",name:"Materiales de Mecanizado y Conformado"},
+  "UT2.2":{icon:"🧪",name:"Teoría de Materiales y Tratamientos Térmicos"},
+  "UT3.1":{icon:"⚙️",name:"Principios del Mecanizado"},
+  "UT3.2":{icon:"🔨",name:"Limado"},
+  "UT3.3":{icon:"🪚",name:"Aserrado"},
+  "UT3.4":{icon:"🕳️",name:"Taladrado"},
+  "UT3.5":{icon:"🔄",name:"Torneado"},
+  "ALL":{icon:"🎯",name:"Todas las unidades"},
+};
+
+// Preguntas pregeneradas del temario
+const QUESTIONS = {"UT1.1":[{"q":"¿Qué es la TOLERANCIA DIMENSIONAL de una pieza?","a":["La diferencia entre la medida nominal y la medida efectiva","El intervalo total de error admisible: Mmax – Mmin","La diferencia entre la medida máxima y la nominal","La medida teórica especificada en el plano"],"c":1},{"q":"En el sistema ISO de tolerancias, ¿qué indica la calidad IT01?","a":["La tolerancia más amplia y fácil de fabricar","La tolerancia más estrecha y difícil de fabricar","Una tolerancia de valor medio","Una tolerancia exclusiva para agujeros"],"c":1},{"q":"¿Qué tipo de ajuste se produce cuando el diámetro del eje es siempre mayor que el del agujero?","a":["Ajuste con juego","Ajuste indeterminado","Ajuste con aprieto","Ajuste libre"],"c":2},{"q":"La DIFERENCIA SUPERIOR (ds) se calcula como:","a":["Mmin – Mn","Mmax – Mmin","Mmax – Mn","Mn – Mmin"],"c":2},{"q":"En el sistema de agujero base, ¿qué letra designa siempre al agujero?","a":["A","h","H","e"],"c":2},{"q":"¿Cuál es la unidad empleada para expresar tolerancias dimensionales?","a":["mm","cm","µm","m"],"c":2},{"q":"¿Qué ventaja principal aporta la intercambiabilidad en la fabricación en serie?","a":["Aumenta el tiempo de montaje","Elimina la necesidad de ajustes individuales y reduce costes","Permite usar materiales de menor calidad","Hace innecesario el control de calidad"],"c":1},{"q":"Las tolerancias geométricas controlan, entre otros, la:","a":["Dureza superficial","Rugosidad Ra","Rectitud, planitud y cilindricidad","Composición química del material"],"c":2},{"q":"En un ajuste indeterminado, ¿qué puede ocurrir?","a":["Siempre hay juego","Siempre hay aprieto","Puede haber juego o aprieto según las piezas concretas","El eje y el agujero tienen exactamente la misma medida"],"c":2},{"q":"¿Qué organismo internacional es responsable de las normas ISO?","a":["UNE","DIN","Organización Internacional de Normalización","AISI"],"c":2}],"UT2.1":[{"q":"¿Cuál es el porcentaje de carbono en el acero según su definición?","a":["Entre 0,05% y 2%","Entre 2% y 4,3%","Más del 4%","Menos del 0,05%"],"c":0},{"q":"¿Qué propiedad describe la capacidad de un material de deformarse en hilos sin romperse?","a":["Maleabilidad","Ductilidad","Tenacidad","Elasticidad"],"c":1},{"q":"El acero inoxidable austenítico contiene aproximadamente:","a":["12-18% Cr sin Ni","18% Cr y 8% Ni","Solo hierro y carbono","Más del 2% de carbono"],"c":1},{"q":"¿Qué elemento de aleación mejora principalmente la tenacidad y forjabilidad del acero?","a":["Cromo (Cr)","Molibdeno (Mo)","Manganeso (Mn)","Wolframio (W)"],"c":2},{"q":"La fundición gris se caracteriza por:","a":["Tener grafito esferoidal y alta ductilidad","Ser muy dura y frágil como la fundición blanca","Tener grafito laminar y buena maquinabilidad","Contener menos del 2% de carbono"],"c":2},{"q":"¿Qué aleación se forma combinando cobre y zinc?","a":["Bronce","Alpaca","Latón","Zamak"],"c":2},{"q":"La MAQUINABILIDAD es la propiedad de un material para:","a":["Resistir la oxidación","Ser deformado sin romperse","Ser mecanizado por arranque de viruta","Absorber energía antes de romperse"],"c":2},{"q":"¿Cuál es la principal ventaja del titanio frente al acero en aplicaciones aeronáuticas?","a":["Es más barato","Tiene mayor conductividad eléctrica","Excelente relación resistencia/peso y resistencia a la corrosión","Es más fácil de mecanizar"],"c":2},{"q":"¿Qué tipo de fundición tiene grafito esferoidal y mejores propiedades mecánicas?","a":["Fundición blanca","Fundición gris","Fundición maleable","Fundición nodular o dúctil"],"c":3},{"q":"La TEMPLABILIDAD de un acero es su capacidad para:","a":["Resistir el desgaste superficial","Formar estructura martensítica durante el temple","Deformarse en láminas","Ser soldado sin fisuras"],"c":1}],"UT2.2":[{"q":"¿En qué estructura cristalina se encuentra el hierro gamma (γ) que forma la austenita?","a":["BCC (cúbica centrada en el cuerpo)","FCC (cúbica centrada en las caras)","Hexagonal compacta","Tetragonal"],"c":1},{"q":"¿Cuál es el constituyente estructural más duro del acero tras el enfriamiento brusco?","a":["Ferrita","Perlita","Martensita","Bainita"],"c":2},{"q":"El tratamiento de RECOCIDO tiene como objetivo principal:","a":["Aumentar la dureza al máximo","Generar martensita en la superficie","Reducir la dureza, mejorar la ductilidad y eliminar tensiones","Introducir carbono en la superficie"],"c":2},{"q":"¿A qué temperatura y porcentaje de carbono se sitúa el punto eutecoide en el diagrama Fe-C?","a":["0,8% C a 727°C","4,3% C a 1148°C","2% C a 900°C","0,5% C a 600°C"],"c":0},{"q":"El ensayo CHARPY mide:","a":["La dureza Brinell del material","La resistencia a la tracción","La tenacidad (energía de rotura por impacto)","El límite elástico"],"c":2},{"q":"¿Qué tratamiento termoquímico introduce carbono en la capa superficial de un acero de bajo carbono?","a":["Nitruración","Temple superficial","Cementación","Revenido"],"c":2},{"q":"La FERRITA es una solución sólida de carbono en hierro alfa con una solubilidad máxima de:","a":["2% de carbono","6,67% de carbono","0,008-0,025% de carbono","0,8% de carbono"],"c":2},{"q":"El REVENIDO se aplica después del temple para:","a":["Aumentar más la dureza","Reducir la fragilidad manteniendo parte de la dureza","Introducir nitrógeno en la superficie","Recristalizar la estructura"],"c":1},{"q":"En el ensayo de dureza VICKERS se utiliza:","a":["Una bola de acero o widia","Un cono de diamante con ángulo de 120°","Una pirámide de diamante de base cuadrada","Una bola de 10mm de diámetro"],"c":2},{"q":"La CEMENTITA (Fe3C) tiene un porcentaje de carbono de:","a":["0,8%","2%","4,3%","6,67%"],"c":3}],"UT3.1":[{"q":"¿Cuál es la unidad de la velocidad de corte (Vc) en mecanizado?","a":["mm/rev","rpm","m/min","mm/min"],"c":2},{"q":"Según la clasificación ISO de materiales, ¿qué color identifica al acero inoxidable?","a":["Azul (P)","Rojo (K)","Verde (N)","Amarillo (M)"],"c":3},{"q":"¿Qué movimiento en mecanizado determina la profundidad de corte?","a":["Movimiento de corte (Mc)","Movimiento de avance (Ma)","Movimiento de penetración (Mp)","Movimiento de retroceso"],"c":2},{"q":"¿En qué año se introdujo el carburo de tungsteno (Widia) como material de herramienta?","a":["1900","1926","1970","1950"],"c":1},{"q":"¿Qué eje es paralelo al eje del husillo en el sistema de coordenadas de la máquina-herramienta?","a":["Eje X","Eje Y","Eje Z","Eje A"],"c":2},{"q":"La plaquita de forma C tiene un ángulo de:","a":["55°","80°","90°","60°"],"c":1},{"q":"¿Qué material de herramienta permite las mayores velocidades de corte?","a":["Acero rápido HSS","Carburo de tungsteno (Widia)","Cerámica","Diamante policristalino (PCD)"],"c":3},{"q":"El ángulo de desprendimiento (γ) de la herramienta sirve para:","a":["Reducir el rozamiento con la pieza mecanizada","Facilitar la salida de la viruta","Aumentar la robustez del filo","Determinar la profundidad de pasada"],"c":1},{"q":"¿Qué clasificación ISO corresponde a los materiales endurecidos entre 45-65 HRc?","a":["P","N","S","H"],"c":3},{"q":"El movimiento de avance (Ma) se expresa en:","a":["m/min","mm/rev","rpm","µm"],"c":1}],"UT3.2":[{"q":"¿Cuál es el ángulo de incidencia principal de una lima?","a":["5°","20°","35°","50°"],"c":2},{"q":"Una lima de grado FINO tiene entre:","a":["8-10 dientes/cm","12-18 dientes/cm","20-30 dientes/cm","Más de 30 dientes/cm"],"c":2},{"q":"¿Qué parte de la lima se introduce en el mango?","a":["Talón","Punta","Espiga","Cuerpo"],"c":2},{"q":"La inclinación recomendada de la lima para piezas de anchura normal es:","a":["20°","45°","70°","90°"],"c":1},{"q":"¿Para qué sirve el limado en cruz?","a":["Para limar superficies curvas","Para controlar visualmente el avance y eliminar ondulaciones","Para dar acabado fino","Para limar metales blandos"],"c":1},{"q":"¿Qué tipo de picado tiene una escofina?","a":["Simple","Doble","Escofina (dientes fresados independientes)","Extrafino"],"c":2},{"q":"La suma de los ángulos de incidencia, desprendimiento y corte de una lima es:","a":["45°","75°","90°","180°"],"c":2},{"q":"¿Cuándo se debe aplicar presión sobre la lima durante el movimiento de retroceso?","a":["Siempre, con la misma presión que en el avance","Solo en materiales duros","Nunca, el retroceso se hace sin presión","Solo en el limado en cruz"],"c":2},{"q":"¿Qué longitud comercial en pulgadas es habitual para una lima estándar de taller?","a":["2\" y 3\"","6\" y 8\"","20\" y 24\"","1\" y 1,5\""],"c":1},{"q":"¿Qué lima se debe usar sobre superficies ya oxidadas para no estropear las buenas?","a":["La lima más fina disponible","Una lima extrafina","Una lima vieja","Una escofina nueva"],"c":2}],"UT3.3":[{"q":"¿Cuál es la velocidad de golpeo recomendada para materiales duros al aserrar?","a":["80-100 golpes/min","50 golpes/min","30 golpes/min","15 golpes/min"],"c":2},{"q":"Una hoja de sierra de grado FINO tiene:","a":["6-7 dientes/cm","8-9 dientes/cm","12-13 dientes/cm","Más de 15 dientes/cm"],"c":2},{"q":"¿Cuál es el ángulo de ataque recomendado al iniciar un corte con sierra manual?","a":["5-10°","20-30°","45°","60-70°"],"c":1},{"q":"¿Por qué el dentado de la hoja de sierra es ondulado o alternado?","a":["Para aumentar la velocidad de corte","Para evitar el rozamiento lateral y que la hoja no quede atrapada","Para facilitar el afilado","Para mejorar la evacuación de viruta"],"c":1},{"q":"¿Cuál es el espesor habitual de una hoja de sierra para metales?","a":["0,2-0,3 mm","0,7-0,8 mm","1,5-2 mm","3-4 mm"],"c":1},{"q":"Al aserrar un tubo, ¿qué técnica se debe aplicar?","a":["Cortar siempre en la misma posición hasta terminar","Girar el tubo a medida que la sierra llega a la pared inferior","Inclinar la sierra 45° durante todo el corte","Usar solo la punta del arco"],"c":1},{"q":"Si se rompe la hoja de sierra durante un corte, ¿qué se debe hacer?","a":["Usar una hoja nueva en la misma ranura","Usar una hoja ya usada para continuar en la ranura existente","Reiniciar el corte por el lado opuesto","Ensanchar la ranura con una lima"],"c":1},{"q":"¿Qué tamaños estándar (distancia entre agujeros) tiene una hoja de sierra?","a":["100, 150, 200 mm","250, 275, 300, 350 mm","400, 450, 500 mm","50, 75, 100 mm"],"c":1},{"q":"Al cortar perfiles, ¿por qué parte se debe empezar?","a":["Por la parte más estrecha","Por cualquier parte indiferentemente","Por la parte de mayor espesor","Por el centro del perfil"],"c":2},{"q":"¿Cuál es el ángulo de desprendimiento de los dientes de una hoja de sierra para metales?","a":["45°","30°","15°","Prácticamente nulo"],"c":3}],"UT3.4":[{"q":"¿Cuál es el semiángulo de punta típico de una broca helicoidal estándar?","a":["45° (90° total)","59° (118° total)","75° (150° total)","30° (60° total)"],"c":1},{"q":"¿Qué tipo de taladradora permite colocar el husillo en cualquier posición para piezas grandes?","a":["Taladradora de columna","Taladradora de husillos múltiples","Taladradora radial","Taladradora de banco"],"c":2},{"q":"La fórmula de la velocidad de corte en taladrado es:","a":["Vc = f · n","Vc = (π · D · n) / 1000","Vc = ap · f","Vc = D / n"],"c":1},{"q":"¿Qué herramienta se usa para crear un alojamiento cónico para la cabeza de un tornillo?","a":["Escariador","Macho de roscar","Avellanador","Broca de punta plana"],"c":2},{"q":"El mango de una broca helicoidal es cónico cuando su diámetro es:","a":["Menor de 6 mm","Entre 6 y 12 mm","Mayor de 12-13 mm","Siempre es cilíndrico"],"c":2},{"q":"¿Cuál es la profundidad de pasada (ap) en taladrado?","a":["ap = D","ap = D/2","ap = D/4","ap = 2D"],"c":1},{"q":"¿Para qué sirve el escariado de un agujero?","a":["Para hacer la rosca interior","Para crear el alojamiento cónico","Para calibrar y dar acabado fino al agujero","Para agrandar el agujero con un buril giratorio"],"c":2},{"q":"¿Qué componente de la taladradora de columna aloja la broca mediante un agujero cónico?","a":["Bancada","Mesa","Husillo","Columna"],"c":2},{"q":"¿Cuántos movimientos principales tiene una taladradora?","a":["Uno: rotación de la broca","Dos: rotación de la broca y avance","Tres: rotación, avance y penetración","Cuatro: rotación, avance, penetración y retroceso"],"c":1},{"q":"¿Qué tipo de agujero NO tiene salida al otro lado de la pieza?","a":["Agujero pasante","Agujero ciego","Agujero avellanado","Agujero roscado"],"c":1}],"UT3.5":[{"q":"¿Cuál es la fórmula para calcular las revoluciones (n) en el torno?","a":["n = Vc · π · D / 1000","n = (Vc · 1000) / (π · D)","n = f · Vc","n = ap · f · n"],"c":1},{"q":"¿Qué operación de torneado genera una superficie plana perpendicular al eje de la pieza?","a":["Cilindrado","Ranurado","Refrentado","Tronchado"],"c":2},{"q":"El CONTRACABEZAL del torno sirve para:","a":["Alojar el motor principal","Controlar la velocidad de avance","Apoyar piezas largas y sujetar brocas","Guiar el carro transversal"],"c":2},{"q":"¿Qué sistema de sujeción del torno es autocentrante?","a":["Plato de cuatro garras","Plato de tres garras","Entre puntos","Luneta fija"],"c":1},{"q":"La velocidad de avance (Vf) en torneado se calcula como:","a":["Vf = Vc / D","Vf = f · n","Vf = ap · f","Vf = π · D · n"],"c":1},{"q":"¿Qué operación de torneado corta completamente la pieza del material en barra?","a":["Ranurado","Conicado","Roscado","Tronchado"],"c":3},{"q":"El tiempo de mecanizado (tm) en torneado se calcula con:","a":["tm = f · n / L","tm = L / (f · n)","tm = Vc · ap","tm = n / f"],"c":1},{"q":"¿Qué elemento del torno guía el desplazamiento del contracabezal y del carro?","a":["Husillo","Bancada con guías","Caja de engranajes","Cabezal fijo"],"c":1},{"q":"Para tornear un cono exterior, ¿qué método se puede usar?","a":["Girar el carro principal","Girar el carro auxiliar o desplazar el contracabezal lateralmente","Cambiar la velocidad de rotación","Modificar el avance automático"],"c":1},{"q":"¿Cuál de los siguientes NO es un movimiento de trabajo en el torno?","a":["Movimiento de corte (rotación de la pieza)","Movimiento de avance (desplazamiento herramienta)","Movimiento de profundidad de pasada","Movimiento de indexación del husillo"],"c":3}]};
+
+// ============================================================
+//  ESTADO
+// ============================================================
+const S = {
+  role:null, name:'', ut:'ALL', salaCode:'',
+  questions:[], qi:0, score:0, ok:0, fail:0,
+  answered:false, timer:null, tLeft:30, history:[], pendingResult:null,
+  players:{}, responses:{}, listeners:[], totalPlayers:0
+};
+const TIME = 30;
+const CIRC = 2*Math.PI*26;
+
+// ============================================================
+//  HELPERS
+// ============================================================
+function show(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
 }
-function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
-function updateHUD(){
-  let qN,qT;
-  if(state.round===1){qN=state.qIndex+1;qT=state.r1.length;}
-  else if(state.round===2){qN=state.qIndex+1;qT=state.r2.length;}
-  else if(state.round===3){qN=1;qT=1;}
-  else if(state.round===4){qN=state.qIndex+1;qT=state.r4.length;}
-  else{qN=state.qIndex+1;qT=state.r5.length;}
-  document.getElementById('hud-round').textContent=state.round;
-  document.getElementById('hud-q').textContent=qN;
-  document.getElementById('hud-total').textContent=qT;
-  document.getElementById('hud-score').textContent=state.score;
-  let done=0;
-  if(state.round===1)done=state.qIndex;
-  else if(state.round===2)done=state.r1.length+state.qIndex;
-  else if(state.round===3)done=state.r1.length+state.r2.length;
-  else if(state.round===4)done=state.r1.length+state.r2.length+1+state.qIndex;
-  else done=state.r1.length+state.r2.length+1+state.r4.length+state.qIndex;
-  document.getElementById('prog').style.width=(done/state.totalQ*100)+'%';
-}
-function renderQuestion(){
-  updateHUD();
-  const c=document.getElementById('q-container');
-  document.getElementById('btn-next').classList.remove('show');
-  if(state.round===1)renderQuiz(c,state.r1[state.qIndex],'🔬 RONDA 1 · ENSAYOS DESTRUCTIVOS',1);
-  else if(state.round===2)renderQuiz(c,state.r2[state.qIndex],'🎯 RONDA 2 · ENSAYOS NO DESTRUCTIVOS',2);
-  else if(state.round===3)renderR3(c);
-  else if(state.round===4)renderR4(c);
-  else renderR5(c);
-}
-function renderQuiz(c,q,badge,rnd){
-  c.innerHTML=`<div class="q-card"><span class="round-badge">${badge}</span><div class="q-text">${q.q}</div><div class="options">${q.opts.map((o,i)=>`<button class="opt-btn" id="opt-${i}" onclick="answerQuiz(${i},${rnd})">${o}</button>`).join('')}</div><div class="feedback" id="feedback"></div></div>`;
-}
-function answerQuiz(idx,rnd){
-  const q=rnd===1?state.r1[state.qIndex]:state.r2[state.qIndex];
-  document.querySelectorAll('.opt-btn').forEach(b=>b.disabled=true);
-  const ok=idx===q.c;
-  if(ok){state.score+=20;state.roundScores[rnd-1]+=20;}
-  document.getElementById('opt-'+q.c).classList.add('correct');
-  if(!ok)document.getElementById('opt-'+idx).classList.add('wrong');
-  const fb=document.getElementById('feedback');
-  fb.innerHTML=`<strong>${ok?'✅ ¡Correcto! +20 pts':'❌ Incorrecto.'}</strong>${q.fb}`;
-  fb.className='feedback '+(ok?'ok':'fail')+' show';
-  document.getElementById('hud-score').textContent=state.score;
-  state.log.push({round:rnd,q:q.q,ok,userAns:q.opts[idx],correct:q.opts[q.c]});
-  document.getElementById('btn-next').classList.add('show');
-}
-function renderR3(c){
-  const sL=shuffle([...r3Pairs]);const sR=shuffle([...r3Pairs]);
-  state.r3Left=sL;state.r3Right=sR;
-  state.r3Selections={};state.matchSelected={left:null,right:null};state.r3Evaluated=false;
-  c.innerHTML=`<div class="q-card"><span class="round-badge">🔗 RONDA 3 · EMPAREJA</span><div class="q-text">Relaciona cada técnica END con su principio o característica clave. Empareja todas y luego pulsa <strong>Comprobar</strong>.</div><div class="match-container"><div><h4>Técnica END</h4>${sL.map((p,i)=>`<div class="match-item" id="ml-${i}" onclick="selectMatch('left',${i})">${p.left}</div>`).join('')}</div><div><h4>Característica</h4>${sR.map((p,i)=>`<div class="match-item" id="mr-${i}" onclick="selectMatch('right',${i})">${p.right}</div>`).join('')}</div></div><div style="margin-top:12px;text-align:center"><button id="btn-check" onclick="checkR3()" style="display:none;background:#ffd700;color:#0d1b2a;border:none;padding:10px 28px;border-radius:50px;font-size:.9rem;font-weight:bold;cursor:pointer;">✔ Comprobar</button></div><div class="feedback" id="feedback"></div></div>`;
-}
-function selectMatch(side,idx){
-  if(state.r3Evaluated)return;
-  const el=document.getElementById(side==='left'?`ml-${idx}`:`mr-${idx}`);
-  if(state.matchSelected[side]!==null){
-    const prev=document.getElementById(state.matchSelected[side]!=null?(side==='left'?`ml-${state.matchSelected[side]}`:`mr-${state.matchSelected[side]}`):'x');
-    if(prev)prev.classList.remove('selected');
-  }
-  state.matchSelected[side]=idx;el.classList.add('selected');
-  if(state.matchSelected.left!==null&&state.matchSelected.right!==null){
-    const li=state.matchSelected.left,ri=state.matchSelected.right;
-    if(state.r3Selections[li]!==undefined){
-      const oldMr=document.getElementById(`mr-${state.r3Selections[li]}`);
-      if(oldMr)oldMr.classList.remove('selected','paired');
-    }
-    Object.keys(state.r3Selections).forEach(k=>{
-      if(state.r3Selections[k]===ri&&parseInt(k)!==li){
-        const oldMl=document.getElementById(`ml-${k}`);
-        if(oldMl)oldMl.classList.remove('selected','paired');
-        delete state.r3Selections[k];
-      }
-    });
-    state.r3Selections[li]=ri;
-    document.getElementById(`ml-${li}`).classList.remove('selected');
-    document.getElementById(`mr-${ri}`).classList.remove('selected');
-    document.getElementById(`ml-${li}`).classList.add('paired');
-    document.getElementById(`mr-${ri}`).classList.add('paired');
-    state.matchSelected={left:null,right:null};
-    if(Object.keys(state.r3Selections).length===r3Pairs.length)document.getElementById('btn-check').style.display='inline-block';
-  }
-}
-function checkR3(){
-  state.r3Evaluated=true;
-  document.getElementById('btn-check').style.display='none';
-  let correct=0;
-  Object.keys(state.r3Selections).forEach(li=>{
-    const ri=state.r3Selections[li];
-    const lItem=state.r3Left[parseInt(li)];
-    const rItem=state.r3Right[ri];
-    const ml=document.getElementById(`ml-${li}`);
-    const mr=document.getElementById(`mr-${ri}`);
-    ml.classList.remove('paired');mr.classList.remove('paired');
-    if(lItem.left===rItem.left){ml.classList.add('matched');mr.classList.add('matched');correct++;}
-    else{ml.classList.add('wrong-match');mr.classList.add('wrong-match');}
-  });
-  const pts=correct*20;
-  state.score+=pts;state.roundScores[2]+=pts;
-  document.getElementById('hud-score').textContent=state.score;
-  const allOk=correct===r3Pairs.length;
-  const fb=document.getElementById('feedback');
-  fb.innerHTML=`<strong>${allOk?'🎉 ¡Todo correcto!':correct>0?`✅ ${correct} de ${r3Pairs.length} correctas`:'❌ Ninguna correcta'} · +${pts} pts</strong>Recuerda: capilaridad (PT) · campo magnético (MT) · rayos X/γ (RT) · ondas mecánicas (UT) · ojo humano (VT).`;
-  fb.className='feedback '+(allOk?'ok':'fail')+' show';
-  state.log.push({round:3,q:'Empareja END con principio físico',ok:allOk,userAns:`${correct}/${r3Pairs.length} correctas`,correct:'5/5 correctas'});
-  document.getElementById('btn-next').classList.add('show');
-}
-function renderR4(c){
-  const q=state.r4[state.qIndex];
-  c.innerHTML=`<div class="q-card"><span class="round-badge">⚠️ RONDA 4 · ¿INDICACIÓN O DEFECTO?</span><div class="q-scenario">${q.sc}</div><div class="q-text">¿Es esta indicación un defecto que obliga a actuar sobre la pieza?</div><div class="defecto-btns"><button class="defecto-btn aceptable" onclick="answerR4('aceptable')">✅ INDICACIÓN ACEPTABLE<br><small>No es defecto · Pieza OK</small></button><button class="defecto-btn defecto" onclick="answerR4('defecto')">❌ ES UN DEFECTO<br><small>Rechazar / Reparar</small></button></div><div class="feedback" id="feedback"></div></div>`;
-}
-function answerR4(ans){
-  const q=state.r4[state.qIndex];
-  document.querySelectorAll('.defecto-btn').forEach(b=>b.disabled=true);
-  const ok=ans===q.a;
-  if(ok){state.score+=20;state.roundScores[3]+=20;}
-  const fb=document.getElementById('feedback');
-  fb.innerHTML=`<strong>${ok?'✅ ¡Correcto! +20 pts':'❌ Incorrecto.'}</strong>${q.fb}`;
-  fb.className='feedback '+(ok?'ok':'fail')+' show';
-  document.getElementById('hud-score').textContent=state.score;
-  const lbl=q.a==='aceptable'?'Indicación aceptable':'Es un defecto';
-  state.log.push({round:4,q:q.sc.substring(0,70)+'…',ok,userAns:ans==='aceptable'?'Indicación aceptable':'Es un defecto',correct:lbl});
-  document.getElementById('btn-next').classList.add('show');
-}
-function renderR5(c){
-  const q=state.r5[state.qIndex];
-  c.innerHTML=`<div class="q-card"><span class="round-badge">🔢 RONDA 5 · PROBLEMA — ${q.badge} ${q.type}</span><div class="num-problem">${q.html}</div><div class="q-text" style="margin-bottom:8px">Selecciona el resultado correcto:</div><div class="num-options">${q.opts.map((o,i)=>`<button class="opt-btn" id="opt-${i}" onclick="answerR5(${i})">${o}</button>`).join('')}</div><div class="feedback" id="feedback"></div></div>`;
-}
-function answerR5(idx){
-  const q=state.r5[state.qIndex];
-  document.querySelectorAll('.opt-btn').forEach(b=>b.disabled=true);
-  const ok=idx===q.correct;
-  if(ok){state.score+=20;state.roundScores[4]+=20;}
-  document.getElementById('opt-'+q.correct).classList.add('correct');
-  if(!ok)document.getElementById('opt-'+idx).classList.add('wrong');
-  const fb=document.getElementById('feedback');
-  fb.innerHTML=`<strong>${ok?'✅ ¡Correcto! +20 pts':'❌ Incorrecto.'}</strong>Resolución: ${q.fb}`;
-  fb.className='feedback '+(ok?'ok':'fail')+' show';
-  document.getElementById('hud-score').textContent=state.score;
-  state.log.push({round:5,q:q.type,ok,userAns:q.opts[idx],correct:q.opts[q.correct]});
-  document.getElementById('btn-next').classList.add('show');
-}
-function nextQuestion(){
-  document.getElementById('btn-next').classList.remove('show');
-  if(state.round===1){state.qIndex++;if(state.qIndex>=state.r1.length){state.round=2;state.qIndex=0;}}
-  else if(state.round===2){state.qIndex++;if(state.qIndex>=state.r2.length){state.round=3;state.qIndex=0;}}
-  else if(state.round===3){state.round=4;state.qIndex=0;}
-  else if(state.round===4){state.qIndex++;if(state.qIndex>=state.r4.length){state.round=5;state.qIndex=0;}}
-  else{state.qIndex++;if(state.qIndex>=state.r5.length){showResults();return;}}
-  renderQuestion();
-}
-function showResults(){
-  const max=state.totalQ*20;
-  document.getElementById('res-name').textContent='👤 '+state.name;
-  document.getElementById('final-score').textContent=state.score;
-  document.getElementById('final-max').textContent='de '+max+' puntos posibles';
-  const pct=state.score/max;
-  document.getElementById('final-msg').textContent=
-    pct>=0.9?'🏆 ¡Inspector de élite! Dominas tanto los ED como los END.':
-    pct>=0.7?'👍 ¡Muy buen resultado! Tienes una sólida base en ensayos.':
-    pct>=0.5?'📚 Aprobado, pero repasa los temas con más fallos.':
-    '🔧 Necesitas repasar la unidad. ¡Puedes mejorar, inténtalo de nuevo!';
-  ['r1s','r2s','r3s','r4s','r5s'].forEach((id,i)=>document.getElementById(id).textContent=state.roundScores[i]+' pts');
-  const names=['🔬 Ronda 1 — Ensayos Destructivos','🎯 Ronda 2 — Ensayos No Destructivos','🔗 Ronda 3 — Empareja END','⚠️ Ronda 4 — Indicación / Defecto','🔢 Ronda 5 — Problemas numéricos'];
-  let html='';
-  for(let r=1;r<=5;r++){
-    const items=state.log.filter(l=>l.round===r);if(!items.length)continue;
-    html+=`<div class="detail-section"><h2>${names[r-1]}</h2>`;
-    items.forEach(it=>{
-      html+=`<div class="detail-item"><div class="detail-icon">${it.ok?'✅':'❌'}</div><div class="detail-text"><div class="d-q">${it.q}</div><div class="d-ans ${it.ok?'ok':'fail'}">${it.ok?'Correcto: '+it.correct:'Tu respuesta: '+it.userAns+' · Correcta: '+it.correct}</div></div></div>`;
-    });
-    html+='</div>';
-  }
-  document.getElementById('detail-container').innerHTML=html;
-  document.getElementById('prog').style.width='100%';
-  showScreen('screen-results');
-}
-function restartGame(){showScreen('screen-intro');}
 function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function genCode(){const c='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';let r='';for(let i=0;i<6;i++)r+=c[Math.floor(Math.random()*c.length)];return r;}
+function cleanListeners(){S.listeners.forEach(fn=>fn());S.listeners=[];}
+function salaRef(path=''){return ref(db,`salas/${S.salaCode}${path?'/'+path:''}`);}
+
+// ============================================================
+//  ROL SCREEN
+// ============================================================
+document.getElementById('rol-teacher').addEventListener('click',()=>{
+  S.role='teacher'; show('teacher-setup-screen');
+});
+document.getElementById('rol-student').addEventListener('click',()=>{
+  S.role='student'; show('student-join-screen');
+});
+
+// ============================================================
+//  TEACHER SETUP
+// ============================================================
+const utGrid = document.getElementById('ut-grid');
+const allBtn = document.getElementById('all-units-btn');
+
+// Populate individual UT buttons (exclude ALL)
+Object.entries(UT_META).filter(([k])=>k!=='ALL').forEach(([k,v])=>{
+  const b=document.createElement('button');
+  b.className='ut-btn';
+  b.innerHTML=`<span class="uti">${v.icon}</span><span class="utn">${k}</span><span class="utd">${v.name}</span>`;
+  b.addEventListener('click',()=>{
+    document.querySelectorAll('.ut-btn').forEach(x=>x.classList.remove('sel'));
+    allBtn.classList.remove('sel');
+    b.classList.add('sel'); S.ut=k; checkSetup();
+  });
+  utGrid.appendChild(b);
+});
+
+// All units button
+allBtn.addEventListener('click',()=>{
+  document.querySelectorAll('.ut-btn').forEach(x=>x.classList.remove('sel'));
+  allBtn.classList.add('sel');
+  S.ut='ALL'; checkSetup();
+});
+
+const teacherNameInp=document.getElementById('teacher-name');
+const createBtn=document.getElementById('create-sala-btn');
+teacherNameInp.addEventListener('input',checkSetup);
+function checkSetup(){createBtn.disabled=!(teacherNameInp.value.trim().length>=2);}
+
+createBtn.addEventListener('click',async()=>{
+  S.name=teacherNameInp.value.trim();
+  S.salaCode=genCode();
+  document.getElementById('setup-err').classList.remove('show');
+  try {
+    if(S.ut==='ALL'){
+      const all=Object.values(QUESTIONS).flat();
+      S.questions=shuffle(all).slice(0,40);
+    } else {
+      S.questions=shuffle([...QUESTIONS[S.ut]]);
+    }
+    await set(salaRef(), {
+      code: S.salaCode,
+      teacher: S.name,
+      ut: S.ut,
+      utName: S.ut==='ALL'?'Todas las unidades':UT_META[S.ut].name,
+      status: 'waiting',
+      questions: S.questions,
+      currentQ: -1,
+      createdAt: Date.now()
+    });
+    document.getElementById('sala-code-display').textContent=S.salaCode;
+    show('teacher-wait-screen');
+    listenPlayers();
+  } catch(e) {
+    document.getElementById('setup-err').textContent=`Error al crear sala: ${e.message}`;
+    document.getElementById('setup-err').classList.add('show');
+  }
+});
+
+// ============================================================
+//  TEACHER WAITING ROOM
+// ============================================================
+function listenPlayers(){
+  const playersRef=ref(db,`salas/${S.salaCode}/players`);
+  const unsub=onValue(playersRef,snap=>{
+    S.players=snap.val()||{};
+    renderPlayers();
+  });
+  S.listeners.push(()=>off(playersRef,'value',unsub));
+}
+
+function renderPlayers(){
+  const grid=document.getElementById('players-grid');
+  const count=Object.keys(S.players).length;
+  document.getElementById('player-count').textContent=count;
+  document.getElementById('start-game-btn').disabled=count<1;
+  if(count===0){
+    grid.innerHTML='<div style="color:var(--muted);font-size:13px;grid-column:1/-1;text-align:center;padding:20px">Esperando alumnos...</div>';
+    return;
+  }
+  grid.innerHTML='';
+  Object.values(S.players).forEach(p=>{
+    const d=document.createElement('div');
+    d.className='player-chip';
+    d.innerHTML=`<span class="pc-icon">🎓</span>${p.name}`;
+    grid.appendChild(d);
+  });
+}
+
+document.getElementById('start-game-btn').addEventListener('click',async()=>{
+  S.totalPlayers=Object.keys(S.players).length;
+  await update(salaRef(),{status:'countdown',currentQ:-1});
+  teacherCountdown();
+});
+
+// ============================================================
+//  STUDENT JOIN
+// ============================================================
+const studentNameInp=document.getElementById('student-name');
+const studentSalaInp=document.getElementById('student-sala');
+const joinBtn=document.getElementById('join-btn');
+studentNameInp.addEventListener('input',checkJoin);
+studentSalaInp.addEventListener('input',()=>{studentSalaInp.value=studentSalaInp.value.toUpperCase();checkJoin();});
+function checkJoin(){joinBtn.disabled=!(studentNameInp.value.trim().length>=2&&studentSalaInp.value.trim().length>=4);}
+
+joinBtn.addEventListener('click',async()=>{
+  const name=studentNameInp.value.trim();
+  const code=studentSalaInp.value.trim().toUpperCase();
+  const errEl=document.getElementById('join-err');
+  errEl.classList.remove('show');
+  try {
+    const salaSnap=await get(ref(db,`salas/${code}`));
+    if(!salaSnap.exists())throw new Error('Sala no encontrada. Revisa el código.');
+    const salaData=salaSnap.val();
+    if(salaData.status!=='waiting')throw new Error('El juego ya ha comenzado. Espera a la próxima partida.');
+    S.name=name; S.salaCode=code;
+    S.ut=salaData.ut;
+    S.questions=salaData.questions;
+    S.totalPlayers=0;
+    // Register player
+    const pid=`p_${Date.now()}_${Math.random().toString(36).substr(2,5)}`;
+    S.playerId=pid;
+    await set(ref(db,`salas/${code}/players/${pid}`),{name,score:0,ok:0,joined:Date.now()});
+    document.getElementById('student-name-display').textContent=name;
+    document.getElementById('student-sala-display').textContent=code;
+    show('student-wait-screen');
+    listenGameState();
+  } catch(e){
+    errEl.textContent=e.message;
+    errEl.classList.add('show');
+  }
+});
+
+// ============================================================
+//  STUDENT — listen to game state
+// ============================================================
+function listenGameState(){
+  const statusRef=ref(db,`salas/${S.salaCode}/status`);
+  const qRef=ref(db,`salas/${S.salaCode}/currentQ`);
+  const unsubStatus=onValue(statusRef,snap=>{
+    const status=snap.val();
+    if(status==='countdown') studentCountdown();
+    if(status==='results') loadAndShowResults();
+  });
+  const unsubQ=onValue(qRef,snap=>{
+    const qi=snap.val();
+    if(qi>=0&&qi<S.questions.length){
+      S.qi=qi; S.answered=false; S.ok=0; S.fail=0;
+      showStudentQ();
+    }
+  });
+  S.listeners.push(()=>{off(statusRef,'value',unsubStatus);off(qRef,'value',unsubQ);});
+}
+
+// ============================================================
+//  COUNTDOWN
+// ============================================================
+function teacherCountdown(){
+  show('countdown-screen');
+  let n=3;
+  const el=document.getElementById('cd-num');
+  el.textContent=n;
+  const iv=setInterval(async()=>{
+    n--;
+    if(n<=0){
+      clearInterval(iv);
+      S.qi=0;
+      await update(salaRef(),{status:'playing',currentQ:0});
+      showTeacherQ();
+    } else {
+      el.style.animation='none';void el.offsetWidth;el.style.animation='cdp 1s ease';
+      el.textContent=n;
+    }
+  },1000);
+}
+
+function studentCountdown(){
+  show('countdown-screen');
+}
+
+// ============================================================
+//  TEACHER QUESTION
+// ============================================================
+function showTeacherQ(){
+  show('teacher-question-screen');
+  const q=S.questions[S.qi];
+  document.getElementById('t-qnum').textContent=`Pregunta ${S.qi+1} / ${S.questions.length}`;
+  document.getElementById('t-q-text').textContent=q.q;
+  document.getElementById('next-q-btn').style.display='none';
+  document.getElementById('reveal-btn').style.display='inline-block';
+  document.getElementById('t-resp-count').textContent='0';
+
+  // Answer options (hidden correct answer)
+  const grid=document.getElementById('t-ans-grid');
+  grid.innerHTML='';
+  ['A','B','C','D'].forEach((l,i)=>{
+    const d=document.createElement('div');
+    d.className='teacher-ans'; d.dataset.i=i;
+    d.innerHTML=`<span class="tal">${l}</span><span>${q.a[i]}</span>`;
+    grid.appendChild(d);
+  });
+
+  document.getElementById('resp-total-big').textContent=`0 / ${Object.keys(S.players).length}`;
+  document.getElementById('resp-total').textContent='Esperando respuestas...';
+
+  // Listen to responses and live ranking
+  listenResponses();
+  listenLiveRanking();
+  startTeacherTimer();
+}
+
+function listenResponses(){
+  const respRef=ref(db,`salas/${S.salaCode}/responses/${S.qi}`);
+  const unsub=onValue(respRef,snap=>{
+    const data=snap.val()||{};
+    let total=0;
+    Object.values(data).forEach(r=>{if(r.answer!=null)total++;});
+    const playerCount=Object.keys(S.players).length;
+    document.getElementById('t-resp-count').textContent=total;
+    document.getElementById('resp-total-big').textContent=`${total} / ${playerCount}`;
+    document.getElementById('resp-total').textContent=total===playerCount?'¡Todos han respondido!':'Esperando respuestas...';
+  });
+  S.listeners.push(()=>off(respRef,'value',unsub));
+}
+
+function startTeacherTimer(){
+  clearInterval(S.timer);
+  S.tLeft=TIME; updateTeacherTimer();
+  S.timer=setInterval(()=>{
+    S.tLeft--;
+    updateTeacherTimer();
+    if(S.tLeft<=0){clearInterval(S.timer);revealAnswer();}
+  },1000);
+}
+
+function updateTeacherTimer(){
+  const t=S.tLeft;
+  document.getElementById('t-timer-num').textContent=t;
+  const off2=CIRC*(1-t/TIME);
+  const f=document.getElementById('t-timer-fill');
+  f.style.strokeDashoffset=off2;
+  f.style.stroke=t>10?'var(--accent)':t>5?'#ff9900':'var(--accent2)';
+}
+
+document.getElementById('reveal-btn').addEventListener('click',()=>{
+  clearInterval(S.timer);
+  revealAnswer();
+});
+
+async function revealAnswer(){
+  const q=S.questions[S.qi];
+  document.querySelectorAll('.teacher-ans').forEach((el,i)=>{
+    if(i===q.c)el.classList.add('correct-ans');
+    else el.style.opacity='.4';
+  });
+  document.getElementById('reveal-btn').style.display='none';
+  document.getElementById('next-q-btn').style.display='inline-block';
+  // Signal students to show feedback
+  await update(salaRef(),{revealed:S.qi});
+}
+
+document.getElementById('next-q-btn').addEventListener('click',async()=>{
+  S.qi++;
+  if(S.qi<S.questions.length){
+    await update(salaRef(),{currentQ:S.qi,revealed:-1});
+    showTeacherQ();
+  } else {
+    await computeAndShowTeacherResults();
+  }
+});
+
+// ============================================================
+//  STUDENT QUESTION
+// ============================================================
+function showStudentQ(){
+  show('student-question-screen');
+  const q=S.questions[S.qi];
+  document.getElementById('s-hud-name').textContent=S.name;
+  document.getElementById('s-hud-score').textContent=S.score+' pts';
+  document.getElementById('s-qnum').textContent=`Pregunta ${S.qi+1} / ${S.questions.length}`;
+  document.getElementById('s-prog-bar').style.width=`${(S.qi/S.questions.length)*100}%`;
+  document.getElementById('s-q-text').textContent=q.q;
+  document.getElementById('s-feedback').className='feedback';
+  S.answered=false;
+
+  const grid=document.getElementById('s-ans-grid');
+  grid.innerHTML='';
+  ['A','B','C','D'].forEach((l,i)=>{
+    const btn=document.createElement('button');
+    btn.className='ans-btn'; btn.dataset.i=i;
+    btn.innerHTML=`<span class="al">${l}</span><span>${q.a[i]}</span>`;
+    btn.addEventListener('click',()=>studentPick(i));
+    grid.appendChild(btn);
+  });
+
+  // Also listen for reveal signal
+  listenReveal();
+  startStudentTimer();
+}
+
+function startStudentTimer(){
+  clearInterval(S.timer);
+  S.tLeft=TIME; updateStudentTimer();
+  S.timer=setInterval(()=>{
+    S.tLeft--;
+    updateStudentTimer();
+    if(S.tLeft<=0){clearInterval(S.timer);if(!S.answered)studentTimeUp();}
+  },1000);
+}
+
+function updateStudentTimer(){
+  const t=S.tLeft;
+  document.getElementById('s-timer-num').textContent=t;
+  const off2=CIRC*(1-t/TIME);
+  const f=document.getElementById('s-timer-fill');
+  f.style.strokeDashoffset=off2;
+  f.style.stroke=t>10?'var(--accent)':t>5?'#ff9900':'var(--accent2)';
+}
+
+async function studentPick(idx){
+  if(S.answered)return;
+  S.answered=true;
+  clearInterval(S.timer);
+  const q=S.questions[S.qi];
+  const correct=idx===q.c;
+  document.querySelectorAll('#s-ans-grid .ans-btn').forEach((b,i)=>{
+    b.disabled=true;
+    if(i!==idx) b.style.opacity='.35';
+  });
+  const pts=correct?Math.max(100,Math.round(1000*(S.tLeft/TIME))):0;
+  if(correct){S.score+=pts;S.ok++;}else{S.fail++;}
+  S.history.push({q:q.q,chosen:idx,c:q.c,a:q.a,ok:correct,pts});
+
+  // Save response to Firebase
+  await set(ref(db,`salas/${S.salaCode}/responses/${S.qi}/${S.playerId}`),{answer:idx,correct,pts,time:S.tLeft});
+  // Update score
+  await update(ref(db,`salas/${S.salaCode}/players/${S.playerId}`),{score:S.score,ok:S.ok});
+
+  // Store result for showing after reveal, go to neutral wait screen
+  S.pendingResult={correct,pts,answer:idx,correctIdx:q.c,answers:q.a};
+  setTimeout(()=>{
+    document.getElementById('wait-feedback').textContent='';
+    document.getElementById('wait-feedback').className='feedback';
+    document.getElementById('wait-pts').textContent='';
+    show('wait-answer-screen');
+  },600);
+}
+
+function studentTimeUp(){
+  S.answered=true;
+  const q=S.questions[S.qi];
+  S.fail++;
+  S.history.push({q:q.q,chosen:-1,c:q.c,a:q.a,ok:false,pts:0});
+  document.querySelectorAll('#s-ans-grid .ans-btn').forEach(b=>{
+    b.disabled=true;
+    b.style.opacity='.35';
+  });
+  set(ref(db,`salas/${S.salaCode}/responses/${S.qi}/${S.playerId}`),{answer:-1,correct:false,pts:0,time:0});
+  S.pendingResult={correct:false,pts:0,answer:-1,correctIdx:q.c,answers:q.a,timedOut:true};
+  setTimeout(()=>{
+    document.getElementById('wait-feedback').textContent='';
+    document.getElementById('wait-feedback').className='feedback';
+    document.getElementById('wait-pts').textContent='';
+    show('wait-answer-screen');
+  },400);
+}
+
+function listenLiveRanking(){
+  const playersRef=ref(db,`salas/${S.salaCode}/players`);
+  const unsub=onValue(playersRef,snap=>{
+    const players=snap.val()||{};
+    const sorted=Object.values(players).sort((a,b)=>(b.score||0)-(a.score||0));
+    const el=document.getElementById('live-lb-list');
+    if(!el)return;
+    const medals=['🥇','🥈','🥉'];
+    el.innerHTML='';
+    if(sorted.length===0){
+      el.innerHTML='<div style="color:var(--muted);font-size:12px;text-align:center;padding:16px">Sin datos aún...</div>';
+      return;
+    }
+    sorted.forEach((p,i)=>{
+      const d=document.createElement('div');
+      d.className='lr-row';
+      d.innerHTML=`<div class="lr-rank">${medals[i]||i+1}</div>
+        <div class="lr-name">${p.name}</div>
+        <div class="lr-score">${(p.score||0).toLocaleString('es-ES')}</div>`;
+      el.appendChild(d);
+    });
+  });
+  S.listeners.push(()=>off(playersRef,'value',unsub));
+}
+
+function listenReveal(){
+  const revRef=ref(db,`salas/${S.salaCode}/revealed`);
+  const unsub=onValue(revRef,snap=>{
+    const revealedQ=snap.val();
+    if(revealedQ===S.qi && S.pendingResult!=null){
+      const r=S.pendingResult;
+      S.pendingResult=null;
+      // Show answer buttons result if still on question screen
+      if(document.getElementById('student-question-screen').classList.contains('active')){
+        document.querySelectorAll('#s-ans-grid .ans-btn').forEach((b,i)=>{
+          b.disabled=true;
+          if(i===r.correctIdx)b.classList.add('correct');
+          else if(i===r.answer&&!r.correct)b.classList.add('wrong');
+        });
+        const fb=document.getElementById('s-feedback');
+        if(r.timedOut){fb.textContent=`⏱ Tiempo agotado. Era: ${r.answers[r.correctIdx]}`;fb.className='feedback fail show';}
+        else if(r.correct){fb.textContent=`✅ ¡Correcto! +${r.pts} puntos`;fb.className='feedback ok show';spawnPts(`+${r.pts}`);}
+        else{fb.textContent=`❌ Incorrecto. Era: ${r.answers[r.correctIdx]}`;fb.className='feedback fail show';}
+      } else {
+        // Already on wait screen — update it with result
+        const fb=document.getElementById('wait-feedback');
+        const ptsEl=document.getElementById('wait-pts');
+        if(r.timedOut){fb.textContent=`⏱ Tiempo agotado. Era: ${r.answers[r.correctIdx]}`;fb.className='feedback show fail';ptsEl.textContent='';}
+        else if(r.correct){fb.textContent=`✅ ¡Correcto!`;fb.className='feedback show ok';ptsEl.textContent=`+${r.pts} pts`;spawnPts(`+${r.pts}`);}
+        else{fb.textContent=`❌ Incorrecto. Era: ${r.answers[r.correctIdx]}`;fb.className='feedback show fail';ptsEl.textContent='';}
+      }
+    }
+  });
+  S.listeners.push(()=>off(revRef,'value',unsub));
+}
+
+// ============================================================
+//  RESULTS — TEACHER
+// ============================================================
+async function computeAndShowTeacherResults(){
+  await update(salaRef(),{status:'results'});
+  const snap=await get(ref(db,`salas/${S.salaCode}/players`));
+  const players=snap.val()||{};
+  const sorted=Object.values(players).sort((a,b)=>b.score-a.score);
+  document.getElementById('t-res-sub').textContent=`${S.ut} — ${UT_META[S.ut].name} · ${sorted.length} jugadores`;
+  const lbEl=document.getElementById('t-lb-list');
+  lbEl.innerHTML='';
+  const medals=['🥇','🥈','🥉'];
+  sorted.forEach((p,i)=>{
+    const pct=Math.round((p.ok/S.questions.length)*100);
+    const d=document.createElement('div');
+    d.className='lb-row';
+    d.innerHTML=`<div class="lb-rank">${medals[i]||i+1}</div>
+      <div class="lb-name">${p.name}</div>
+      <div><div class="lb-score-val">${(p.score||0).toLocaleString('es-ES')}</div><div class="lb-pct">${pct}% aciertos</div></div>`;
+    lbEl.appendChild(d);
+  });
+  show('teacher-results-screen');
+}
+
+// ============================================================
+//  RESULTS — STUDENT
+// ============================================================
+async function loadAndShowResults(){
+  const snap=await get(ref(db,`salas/${S.salaCode}/players`));
+  const players=snap.val()||{};
+  const sorted=Object.values(players).sort((a,b)=>b.score-a.score);
+  const total=S.questions.length;
+  const pct=Math.round((S.ok/total)*100);
+  document.getElementById('res-sub').textContent=`${S.name} — ${S.ut}: ${UT_META[S.ut].name}`;
+  document.getElementById('final-score').textContent=S.score.toLocaleString('es-ES');
+  document.getElementById('s-ok').textContent=S.ok;
+  document.getElementById('s-fail').textContent=S.fail;
+  document.getElementById('s-pct').textContent=pct+'%';
+  const rankEl=document.getElementById('rank-msg');
+  if(pct===100){rankEl.className='rank-msg rank-gold';rankEl.textContent='🥇 ¡Perfecto! Puntuación máxima.';}
+  else if(pct>=80){rankEl.className='rank-msg rank-silver';rankEl.textContent='🥈 ¡Muy bien! Tienes el tema controlado.';}
+  else if(pct>=60){rankEl.className='rank-msg rank-bronze';rankEl.textContent='🥉 Bien, pero puedes mejorar.';}
+  else if(pct>=40){rankEl.className='rank-msg rank-ok';rankEl.textContent='📖 Repasa el temario.';}
+  else{rankEl.className='rank-msg rank-low';rankEl.textContent='💪 No te rindas. ¡A estudiar!';}
+
+  // Leaderboard
+  const lbEl=document.getElementById('lb-list');
+  lbEl.innerHTML='';
+  const medals=['🥇','🥈','🥉'];
+  sorted.forEach((p,i)=>{
+    const isMe=p.name===S.name;
+    const ppct=Math.round((p.ok/total)*100);
+    const d=document.createElement('div');
+    d.className='lb-row'+(isMe?' me':'');
+    d.innerHTML=`<div class="lb-rank">${medals[i]||i+1}</div>
+      <div class="lb-name">${p.name}${isMe?' 👈':''}</div>
+      <div><div class="lb-score-val">${(p.score||0).toLocaleString('es-ES')}</div><div class="lb-pct">${ppct}% aciertos</div></div>`;
+    lbEl.appendChild(d);
+  });
+
+  // Review (only if history exists)
+  if(S.history.length>0){
+    const revEl=document.getElementById('rev-items');
+    revEl.innerHTML='';
+    S.history.forEach(h=>{
+      const d=document.createElement('div');
+      d.className='rev-item '+(h.ok?'ri-ok':'ri-fail');
+      d.innerHTML=`<div class="rev-icon">${h.ok?'✅':'❌'}</div>
+      <div><div class="rev-q">${h.q}</div>
+      <div class="rev-a">${h.ok?h.a[h.c]:`Tu respuesta: ${h.chosen>=0?h.a[h.chosen]:'Sin responder'} → Correcta: ${h.a[h.c]}`}</div></div>`;
+      revEl.appendChild(d);
+    });
+  }else{
+    document.getElementById('rev-section').style.display='none';
+  }
+  show('results-screen');
+}
+
+// ============================================================
+//  RESTART
+// ============================================================
+document.getElementById('restart-btn').addEventListener('click',resetAndGoHome);
+document.getElementById('t-restart-btn').addEventListener('click',resetAndGoHome);
+
+async function resetAndGoHome(){
+  cleanListeners();
+  clearInterval(S.timer);
+  // Clean up sala
+  if(S.salaCode&&S.role==='teacher'){
+    try{await remove(salaRef());}catch(e){}
+  }
+  Object.assign(S,{role:null,name:'',ut:null,salaCode:'',questions:[],qi:0,score:0,ok:0,fail:0,answered:false,timer:null,tLeft:30,history:[],pendingResult:null,players:{},responses:{},listeners:[],totalPlayers:0});
+  document.querySelectorAll('.ut-btn').forEach(b=>b.classList.remove('sel'));
+  document.getElementById('all-units-btn').classList.add('sel');
+  S.ut='ALL';
+  document.getElementById('teacher-name').value='';
+  document.getElementById('student-name').value='';
+  document.getElementById('student-sala').value='';
+  document.getElementById('setup-err').classList.remove('show');
+  document.getElementById('join-err').classList.remove('show');
+  document.getElementById('create-sala-btn').disabled=true;
+  document.getElementById('join-btn').disabled=true;
+  show('rol-screen');
+}
+
+// Points pop animation
+function spawnPts(text){
+  const el=document.createElement('div');
+  el.className='pts-pop'; el.textContent=text;
+  el.style.left=Math.random()*(window.innerWidth-200)+100+'px';
+  el.style.top=Math.random()*(window.innerHeight/2)+100+'px';
+  document.body.appendChild(el);
+  setTimeout(()=>el.remove(),1300);
+}
 </script>
 </body>
 </html>
