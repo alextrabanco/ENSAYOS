@@ -1,0 +1,495 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Inspector de Ensayos — CIFP La Laboral</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',sans-serif;background:#1a1a2e;color:#eee;min-height:100vh;display:flex;align-items:flex-start;justify-content:center;padding:16px}
+#app{width:100%;max-width:800px}
+.screen{display:none}.screen.active{display:block}
+#screen-intro{text-align:center;padding-top:16px}
+.logo{font-size:2.8rem;margin-bottom:6px}
+h1{font-size:1.9rem;color:#00d4aa;letter-spacing:2px;margin-bottom:4px}
+.subtitle{color:#aaa;margin-bottom:18px;font-size:.9rem}
+.rounds-preview{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:18px}
+.round-card{background:#16213e;border:1px solid #00d4aa33;border-radius:10px;padding:12px}
+.round-card .icon{font-size:1.4rem;margin-bottom:4px}
+.round-card h3{font-size:.78rem;color:#00d4aa;margin-bottom:3px}
+.round-card p{font-size:.72rem;color:#aaa}
+.name-box{background:#16213e;border-radius:12px;padding:18px;margin-bottom:16px}
+.name-box label{display:block;margin-bottom:7px;color:#00d4aa;font-weight:bold;font-size:.95rem}
+.name-box input{width:100%;background:#0d1b2a;border:1px solid #00d4aa55;border-radius:8px;padding:10px 14px;color:#fff;font-size:1rem;outline:none}
+.name-box input:focus{border-color:#00d4aa}
+.btn-start{background:linear-gradient(135deg,#00d4aa,#0094ff);color:#fff;border:none;padding:13px 44px;font-size:1rem;font-weight:bold;border-radius:50px;cursor:pointer;transition:transform .2s}
+.btn-start:hover{transform:scale(1.05)}
+#hud{display:flex;justify-content:space-between;align-items:center;background:#16213e;border-radius:10px;padding:9px 16px;margin-bottom:12px}
+.hud-round{font-size:.8rem;color:#aaa}.hud-round span{color:#00d4aa;font-weight:bold}
+.hud-score{font-size:1rem;font-weight:bold;color:#ffd700}
+.progress-bar{height:5px;background:#333;border-radius:3px;margin-bottom:14px}
+.progress-fill{height:100%;background:linear-gradient(90deg,#00d4aa,#0094ff);border-radius:3px;transition:width .4s}
+.q-card{background:#16213e;border-radius:12px;padding:22px;margin-bottom:14px}
+.round-badge{display:inline-block;background:#00d4aa22;color:#00d4aa;border:1px solid #00d4aa55;border-radius:20px;padding:3px 12px;font-size:.7rem;font-weight:bold;letter-spacing:1px;margin-bottom:10px}
+.q-text{font-size:.97rem;line-height:1.6;color:#ddd;margin-bottom:14px}
+.q-scenario{background:#0d1b2a;border-left:3px solid #00d4aa;border-radius:0 8px 8px 0;padding:9px 13px;margin-bottom:14px;font-style:italic;color:#bbb;font-size:.88rem}
+.options{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.opt-btn{background:#0d1b2a;border:1px solid #ffffff22;border-radius:8px;padding:11px 13px;font-size:.85rem;color:#ddd;cursor:pointer;text-align:left;transition:all .2s;line-height:1.3}
+.opt-btn:hover:not(:disabled){border-color:#00d4aa;background:#00d4aa11}
+.opt-btn.correct{border-color:#00ff88;background:#00ff8820;color:#00ff88}
+.opt-btn.wrong{border-color:#ff4466;background:#ff446620;color:#ff4466}
+.opt-btn:disabled{cursor:default}
+.match-container{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.match-col h4{font-size:.73rem;color:#aaa;letter-spacing:1px;margin-bottom:7px;text-transform:uppercase}
+.match-item{background:#0d1b2a;border:2px solid #ffffff22;border-radius:8px;padding:9px 11px;font-size:.8rem;color:#ddd;cursor:pointer;margin-bottom:5px;transition:all .2s;min-height:44px;display:flex;align-items:center}
+.match-item:hover:not(.matched):not(.paired){border-color:#00d4aa}
+.match-item.selected{border-color:#0094ff;background:#0094ff22;color:#7dcfff}
+.match-item.paired{border-color:#ffd700;background:#ffd70015;color:#ffd700}
+.match-item.matched{border-color:#00ff88;background:#00ff8815;color:#00ff88;cursor:default}
+.match-item.wrong-match{border-color:#ff4466;background:#ff446615;color:#ff8899}
+.defecto-btns{display:flex;gap:12px;justify-content:center;margin-top:10px}
+.defecto-btn{flex:1;padding:14px;border:2px solid;border-radius:10px;font-size:.9rem;font-weight:bold;cursor:pointer;transition:all .2s;background:transparent;line-height:1.4}
+.defecto-btn.aceptable{border-color:#00ff88;color:#00ff88}
+.defecto-btn.aceptable:hover:not(:disabled){background:#00ff8820}
+.defecto-btn.defecto{border-color:#ff4466;color:#ff4466}
+.defecto-btn.defecto:hover:not(:disabled){background:#ff446620}
+.defecto-btn:disabled{opacity:.5;cursor:default}
+.num-problem{background:#0d1b2a;border-radius:8px;padding:14px;margin-bottom:12px;font-size:.88rem;line-height:1.8}
+.num-problem .dato{color:#7dcfff}
+.num-options{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.feedback{border-radius:8px;padding:11px 14px;margin-top:12px;font-size:.86rem;line-height:1.5;display:none}
+.feedback.show{display:block}
+.feedback.ok{background:#00ff8818;border:1px solid #00ff8855;color:#00ff88}
+.feedback.fail{background:#ff446618;border:1px solid #ff446655;color:#ff8899}
+.feedback strong{display:block;margin-bottom:3px;font-size:.92rem}
+.btn-next{background:#00d4aa;color:#0d1b2a;border:none;padding:9px 26px;border-radius:50px;font-size:.88rem;font-weight:bold;cursor:pointer;margin-top:12px;display:none;transition:transform .2s}
+.btn-next:hover{transform:scale(1.04)}
+.btn-next.show{display:inline-block}
+#screen-results{padding-top:8px}
+.res-header{text-align:center;background:#16213e;border-radius:12px;padding:20px;margin-bottom:14px}
+.res-header .logo{font-size:2.2rem;margin-bottom:5px}
+.res-header h1{font-size:1.5rem;color:#00d4aa;margin-bottom:3px}
+.res-name{font-size:1rem;color:#ffd700;margin-bottom:10px}
+.result-score{font-size:3.2rem;font-weight:bold;color:#ffd700;margin:6px 0 2px}
+.result-max{color:#aaa;font-size:.88rem;margin-bottom:8px}
+.result-msg{font-size:.95rem;color:#ddd;margin-bottom:14px}
+.res-rounds{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;margin-bottom:14px}
+.res-round-item{background:#0d1b2a;border-radius:8px;padding:10px 6px;text-align:center}
+.res-round-item .r-icon{font-size:1.1rem}
+.res-round-item .r-label{font-size:.62rem;color:#aaa;margin-top:2px}
+.res-round-item .r-val{font-size:.95rem;font-weight:bold;color:#00d4aa;margin-top:2px}
+.detail-section{background:#16213e;border-radius:12px;padding:18px;margin-bottom:12px}
+.detail-section h2{font-size:.95rem;color:#00d4aa;margin-bottom:12px;border-bottom:1px solid #00d4aa33;padding-bottom:7px}
+.detail-item{display:flex;gap:9px;align-items:flex-start;padding:9px 0;border-bottom:1px solid #ffffff08}
+.detail-item:last-child{border-bottom:none}
+.detail-icon{font-size:1rem;margin-top:1px;flex-shrink:0}
+.detail-text{flex:1}
+.detail-text .d-q{font-size:.83rem;color:#ccc;margin-bottom:3px}
+.detail-text .d-ans{font-size:.78rem}
+.detail-text .d-ans.ok{color:#00ff88}
+.detail-text .d-ans.fail{color:#ff8899}
+.capture-note{background:#ffd70015;border:1px solid #ffd70055;border-radius:9px;padding:12px;text-align:center;margin-bottom:14px;color:#ffd700;font-size:.85rem}
+.btn-restart{background:linear-gradient(135deg,#00d4aa,#0094ff);color:#fff;border:none;padding:11px 34px;font-size:.92rem;font-weight:bold;border-radius:50px;cursor:pointer;display:block;margin:0 auto}
+</style>
+</head>
+<body>
+<div id="app">
+
+<div id="screen-intro" class="screen active">
+  <div class="logo">🔬</div>
+  <h1>INSPECTOR DE ENSAYOS</h1>
+  <p class="subtitle">Ensayos Destructivos y No Destructivos · CFGS Construcciones Metálicas · CIFP La Laboral</p>
+  <div class="rounds-preview">
+    <div class="round-card"><div class="icon">🔬</div><h3>RONDA 1 — Ensayos Destructivos</h3><p>20 preguntas de 25 · tracción, flexión, dureza, impacto</p></div>
+    <div class="round-card"><div class="icon">🎯</div><h3>RONDA 2 — Ensayos No Destructivos</h3><p>20 preguntas de 25 · VT, PT, MT, UT, RT</p></div>
+    <div class="round-card"><div class="icon">🔗</div><h3>RONDA 3 — Empareja END</h3><p>Relaciona cada técnica con su principio físico</p></div>
+    <div class="round-card"><div class="icon">⚠️</div><h3>RONDA 4 — ¿Indicación o Defecto?</h3><p>15 casos de 20 · decide según la norma</p></div>
+    <div class="round-card" style="grid-column:1/-1"><div class="icon">🔢</div><h3>RONDA 5 — Problemas numéricos</h3><p>Brinell · Vickers · Rockwell · Charpy · números aleatorios cada partida</p></div>
+  </div>
+  <div class="name-box">
+    <label>Introduce tu nombre y apellidos antes de empezar:</label>
+    <input type="text" id="input-name" placeholder="Nombre Apellido1 Apellido2" maxlength="60">
+  </div>
+  <button class="btn-start" onclick="startGame()">▶ EMPEZAR</button>
+</div>
+
+<div id="screen-game" class="screen">
+  <div id="hud">
+    <div class="hud-round">RONDA <span id="hud-round">1</span>/5 · Pregunta <span id="hud-q">1</span>/<span id="hud-total">-</span></div>
+    <div class="hud-score">⭐ <span id="hud-score">0</span> pts</div>
+  </div>
+  <div class="progress-bar"><div class="progress-fill" id="prog"></div></div>
+  <div id="q-container"></div>
+  <button class="btn-next" id="btn-next" onclick="nextQuestion()">Siguiente →</button>
+</div>
+
+<div id="screen-results" class="screen">
+  <div class="res-header">
+    <div class="logo">🏆</div>
+    <h1>RESULTADO FINAL</h1>
+    <div class="res-name" id="res-name"></div>
+    <div class="result-score" id="final-score">0</div>
+    <div class="result-max" id="final-max"></div>
+    <div class="result-msg" id="final-msg"></div>
+  </div>
+  <div class="res-rounds">
+    <div class="res-round-item"><div class="r-icon">🔬</div><div class="r-label">Ronda 1 ED</div><div class="r-val" id="r1s">0</div></div>
+    <div class="res-round-item"><div class="r-icon">🎯</div><div class="r-label">Ronda 2 END</div><div class="r-val" id="r2s">0</div></div>
+    <div class="res-round-item"><div class="r-icon">🔗</div><div class="r-label">Ronda 3</div><div class="r-val" id="r3s">0</div></div>
+    <div class="res-round-item"><div class="r-icon">⚠️</div><div class="r-label">Ronda 4</div><div class="r-val" id="r4s">0</div></div>
+    <div class="res-round-item"><div class="r-icon">🔢</div><div class="r-label">Ronda 5</div><div class="r-val" id="r5s">0</div></div>
+  </div>
+  <div id="detail-container"></div>
+  <div class="capture-note">📸 Haz una captura de pantalla de esta página y envíasela al profesor</div>
+  <button class="btn-restart" onclick="restartGame()">🔄 Jugar de nuevo</button>
+</div>
+
+</div>
+<script>
+const allR1=[
+  {q:"¿Cuál es el ensayo mecánico más importante y extendido?",opts:["Ensayo de flexión","Ensayo de tracción","Ensayo de dureza Vickers","Ensayo Charpy"],c:1,fb:"El ensayo de TRACCIÓN es el más importante y extendido. Proporciona el límite elástico (σe), la resistencia a la tracción (Rm), el módulo de Young (E), el alargamiento de rotura (A%) y la estricción (Z%)."},
+  {q:"¿Qué representa el límite elástico (σe) en la curva tensión-deformación?",opts:["La tensión máxima soportada antes de la rotura","La tensión máxima que no produce deformación permanente","La pendiente de la zona plástica","La energía absorbida hasta la rotura"],c:1,fb:"El límite elástico (σe) es la tensión máxima que el material puede soportar sin sufrir deformación permanente. Por debajo de σe el material recupera su forma original; por encima entra en zona plástica."},
+  {q:"En el ensayo de flexión a tres puntos, ¿dónde se aplica la carga?",opts:["En los dos extremos de la probeta","En el punto central, con la probeta apoyada en dos rodillos","En dos puntos intermedios iguales","En cualquier punto, el resultado es el mismo"],c:1,fb:"En la flexión a TRES PUNTOS la probeta se apoya en dos rodillos y la carga F se aplica en el punto central. Es el método más habitual. En la flexión a cuatro puntos la carga se aplica en dos puntos intermedios."},
+  {q:"¿Qué mide la TENACIDAD de un material?",opts:["Su resistencia a ser rayado superficialmente","Su rigidez ante cargas estáticas","Su capacidad para deformarse antes de romperse","Su resistencia a la corrosión"],c:2,fb:"La TENACIDAD es la capacidad de los materiales para deformarse antes de romperse. Su valor numérico se representa mediante la RESILIENCIA (KCV o KCU). Un material tenaz no es frágil."},
+  {q:"¿Cuál es la diferencia principal entre el ensayo Charpy y el ensayo Izod?",opts:["En Charpy se usa péndulo y en Izod maza de caída libre","En Charpy la probeta es biapoyada; en Izod está empotrada en voladizo","En Charpy la entalla es en V y en Izod siempre en U","Son exactamente iguales, solo cambia el nombre"],c:1,fb:"La diferencia clave es la sujeción: en CHARPY la probeta está biapoyada y el péndulo golpea en el centro. En IZOD la probeta está empotrada en voladizo y el péndulo golpea el extremo libre."},
+  {q:"¿Qué tipo de penetrador usa el ensayo de dureza Vickers?",opts:["Bola de acero templado","Cono de diamante de 120°","Pirámide de diamante de base cuadrada","Bola de carburo de tungsteno"],c:2,fb:"El ensayo VICKERS utiliza una pirámide de diamante de base cuadrada. Deja una huella romboidal cuyas diagonales d₁ y d₂ se miden al microscopio. Permite ensayar cualquier dureza y espesores pequeños."},
+  {q:"¿Qué indica una superficie de rotura brillante y sin deformación en el ensayo Charpy?",opts:["Comportamiento dúctil: alta resiliencia","Comportamiento frágil: baja resiliencia","Material muy tenaz con alta absorción de energía","El ensayo ha fallado y debe repetirse"],c:1,fb:"Una superficie brillante y rotura sin apenas deformación indican comportamiento FRÁGIL y baja resiliencia. Una superficie mate con deformación notable indica comportamiento dúctil y alta resiliencia."},
+  {q:"¿Qué fórmula corresponde al cálculo de la dureza Brinell?",opts:["HB = F / (π·D·d)","HB = 2F / [π·D·(D − √(D²−d²))]","HB = 1,854·F / d²","HB = (h₃ − h₁) / 0,002"],c:1,fb:"La fórmula del ensayo BRINELL es HB = 2F / [π·D·(D − √(D²−d²))], donde F es la fuerza en kp, D el diámetro de la bola y d el diámetro de la huella, ambos en mm."},
+  {q:"¿Cuál es el penetrador del ensayo Rockwell C (para materiales duros)?",opts:["Bola de acero de 1 mm de diámetro","Pirámide de diamante Vickers","Cono de diamante de 120°","Bola de carburo de 10 mm"],c:2,fb:"En el ensayo ROCKWELL C se utiliza un cono de diamante de 120° con una carga total de 150 kg (10 kg de precarga + 140 kg adicionales). La fórmula es HRC = 100 − e."},
+  {q:"¿En qué dos grandes grupos se clasifican los ensayos de materiales?",opts:["Ensayos mecánicos y ensayos químicos","Ensayos destructivos y ensayos no destructivos","Ensayos estáticos y ensayos dinámicos","Ensayos normalizados y ensayos de laboratorio"],c:1,fb:"Los ensayos se clasifican en ENSAYOS DESTRUCTIVOS (ED), en los que la pieza queda dañada o inutilizada, y ENSAYOS NO DESTRUCTIVOS (END), en los que la pieza puede seguir utilizándose."},
+  {q:"¿Cuál es la principal diferencia entre un ensayo destructivo y uno no destructivo?",opts:["El coste del equipo necesario","En los ED la pieza queda dañada o inutilizada; en los END no","El tiempo que tarda en realizarse","El tipo de material que pueden ensayar"],c:1,fb:"Los ENSAYOS DESTRUCTIVOS (ED) dañan o inutilizan la probeta. Los ENSAYOS NO DESTRUCTIVOS (END) no alteran la pieza, que puede seguir utilizándose tras el ensayo."},
+  {q:"¿Qué tipo de ensayos permiten inspeccionar piezas en servicio sin retirarlas?",opts:["Solo los ensayos destructivos","Los ensayos no destructivos","Únicamente el ensayo de dureza","Ninguno, siempre hay que retirar la pieza"],c:1,fb:"Los ENSAYOS NO DESTRUCTIVOS (END) permiten inspeccionar piezas reales en servicio sin retirarlas ni dañarlas. Permiten además inspecciones rápidas y repetidas sobre la misma pieza."},
+  {q:"¿Qué significan las siglas UNE?",opts:["Unión Normalizada Europea","Una Norma Española","Unidad Nacional de Ensayos","Universal Normativa de Estandarización"],c:1,fb:"UNE significa 'Una Norma Española'. Son normas nacionales publicadas por AENOR, habitualmente adoptadas de normas europeas (EN) o internacionales (ISO)."},
+  {q:"¿Bajo qué norma se realiza el ensayo de tracción?",opts:["UNE-EN ISO 9712","UNE-EN ISO 6892-1","UNE-EN ISO 3452","UNE-EN ISO 9934"],c:1,fb:"El ensayo de tracción se realiza según la norma UNE-EN ISO 6892-1, que establece el método de ensayo a temperatura ambiente para materiales metálicos, incluyendo las dimensiones de la probeta y la velocidad de carga."},
+  {q:"¿Qué es la estricción (Z%) en el ensayo de tracción?",opts:["El alargamiento total de la probeta tras la rotura","La reducción de sección en la zona de rotura: Z = (S₀ − Sf) / S₀ × 100","La tensión máxima soportada por el material","La pendiente de la curva tensión-deformación"],c:1,fb:"La ESTRICCIÓN (Z%) es la reducción de sección transversal en la zona de rotura. Se calcula como Z = (S₀ − Sf) / S₀ × 100. Es un indicador de ductilidad del material."},
+  {q:"¿Qué evalúa el ensayo de flexión?",opts:["La resistencia del material a ser penetrado","El comportamiento del material ante cargas perpendiculares a su eje","La energía absorbida hasta la rotura por impacto","La resistencia a la corrosión superficial"],c:1,fb:"El ensayo de FLEXIÓN evalúa el comportamiento de un material cuando se somete a cargas perpendiculares a su eje, generando tensiones combinadas de tracción y compresión. Es especialmente relevante en materiales frágiles."},
+  {q:"¿Qué es la dureza de un material?",opts:["Su capacidad para absorber energía de impacto","Su resistencia a la deformación permanente bajo carga axial","Su resistencia a ser rayado o penetrado superficialmente","Su módulo de elasticidad bajo carga estática"],c:2,fb:"La DUREZA es la resistencia de un material a ser rayado o penetrado superficialmente. Los ensayos de dureza por penetración (Brinell, Vickers, Rockwell) son sencillos, rápidos y prácticamente no destructivos."},
+  {q:"¿Cuál es el material más duro que existe?",opts:["Acero templado","Carburo de tungsteno","Diamante","Cerámica de alúmina"],c:2,fb:"El DIAMANTE es el material más duro que existe. Por eso se utiliza como penetrador en los ensayos de dureza Vickers (pirámide de diamante) y Rockwell C (cono de diamante)."},
+  {q:"¿Qué significa la designación 230 HB 5 2500 10?",opts:["Dureza 230, método Vickers, bola 5 mm, fuerza 2500 N, tiempo 10 s","Dureza 230, método Brinell, bola 5 mm, fuerza 2500 kp, tiempo 10 s","Dureza 230, método Rockwell B, penetrador 5 mm, carga 2500 kp, tiempo 10 s","Dureza 230, método Brinell, bola 2,5 mm, fuerza 500 kp, tiempo 10 s"],c:1,fb:"La designación normalizada Brinell se lee: 230 = valor de dureza · HB = método Brinell · 5 = diámetro de la bola en mm · 2500 = fuerza en kp · 10 = tiempo en segundos."},
+  {q:"¿Qué parámetro del ensayo de tracción indica la rigidez del material?",opts:["Alargamiento de rotura (A%)","Estricción (Z%)","Módulo de elasticidad o de Young (E)","Resistencia a la tracción (Rm)"],c:2,fb:"El MÓDULO DE YOUNG (E) es la pendiente de la zona elástica de la curva tensión-deformación. Representa la rigidez del material: cuanto mayor es E, más rígido es el material. Para el acero, E ≈ 210 GPa."},
+  {q:"¿Qué tipo de entalla puede tener la probeta del ensayo Charpy?",opts:["Solo entalla en forma de V","Solo entalla en forma de U","Entalla en forma de V o en forma de U","No lleva entalla, es una probeta lisa"],c:2,fb:"Las probetas normalizadas del ensayo Charpy llevan una entalla en la parte central para favorecer la rotura por concentración de tensiones. Esta entalla puede ser en forma de V (KCV) o en forma de U (KCU)."},
+  {q:"¿Qué organismos publican las normas ISO?",opts:["Solo organismos nacionales de cada país","La International Organization for Standardization, de alcance mundial","El Comité Europeo de Normalización (CEN)","La American Society for Testing and Materials (ASTM)"],c:1,fb:"ISO (International Organization for Standardization) publica normas de alcance MUNDIAL. Son distintas de las EN (normas europeas del CEN) y de las ASTM (normas americanas)."},
+  {q:"¿Qué representa la resiliencia (KCV o KCU) obtenida en el ensayo Charpy?",opts:["La resistencia máxima del material a tracción","La energía absorbida por unidad de sección hasta la rotura","El módulo de elasticidad del material ensayado","La dureza superficial de la probeta"],c:1,fb:"La RESILIENCIA (KCV o KCU) es la energía absorbida por la probeta por unidad de sección hasta la rotura. Se calcula como E/S₀. Mide la ductilidad o fragilidad del material ante impactos."},
+  {q:"¿Qué fórmula se usa para calcular la dureza Rockwell en materiales blandos (HRB)?",opts:["HRB = 100 − e","HRB = 130 − e","HRB = e / 0,002","HRB = 1,854 · F / d²"],c:1,fb:"Para materiales blandos (escala B, penetrador bola de acero) se usa HRB = 130 − e. Para materiales duros (escala C, cono de diamante) se usa HRC = 100 − e. El valor 'e' se calcula como h/0,002."},
+  {q:"¿Qué aplicación industrial tiene el ensayo de tracción en la construcción metálica?",opts:["Detectar grietas internas en soldaduras","Verificar la dureza superficial de recubrimientos","Certificar las propiedades mecánicas del acero estructural","Comprobar la resistencia a la corrosión de los perfiles"],c:2,fb:"En la CONSTRUCCIÓN METÁLICA el ensayo de tracción se utiliza para certificar las propiedades mecánicas del acero estructural (límite elástico, resistencia a tracción, alargamiento), garantizando que cumple las especificaciones normativas."}
+];
+
+const allR2=[
+  {q:"¿Qué ensayo END es el más adecuado para detectar grietas superficiales en tubería de acero inoxidable antes de pintar?",opts:["Radiografía (RT)","Líquidos Penetrantes (PT)","Ultrasonidos (UT)","Partículas Magnéticas (MT)"],c:1,fb:"Los Líquidos Penetrantes (PT) son el método más rápido y económico para detectar grietas abiertas a la superficie en materiales no porosos. El acero inoxidable no es ferromagnético, descartando las partículas magnéticas."},
+  {q:"¿Qué ensayo END detecta defectos internos volumétricos en soldaduras sin destruir la pieza?",opts:["Inspección Visual (VT)","Partículas Magnéticas (MT)","Ultrasonidos (UT)","Líquidos Penetrantes (PT)"],c:2,fb:"Los Ultrasonidos (UT) son el método END más versátil y potente para detectar defectos internos. Las ondas mecánicas de alta frecuencia (1-15 MHz) se reflejan en las discontinuidades internas."},
+  {q:"¿Qué ensayo END puede aplicarse sobre materiales NO ferromagnéticos como el aluminio?",opts:["Partículas Magnéticas (MT)","Líquidos Penetrantes (PT)","Ambos pueden usarse igual","Ninguno de los dos"],c:1,fb:"Las Partículas Magnéticas (MT) solo funcionan en materiales ferromagnéticos. Los Líquidos Penetrantes (PT) funcionan en cualquier material no poroso, incluido el aluminio."},
+  {q:"¿Qué ensayo END proporciona un registro permanente de la inspección para archivar en el expediente técnico?",opts:["Inspección Visual (VT)","Líquidos Penetrantes (PT)","Radiografía (RT)","Partículas Magnéticas (MT)"],c:2,fb:"La Radiografía (RT) genera una imagen permanente en la placa radiográfica que puede archivarse como registro documental. Es fundamental en sectores donde la trazabilidad es obligatoria."},
+  {q:"¿Cuál es el primer END que siempre debe realizarse antes que cualquier otro?",opts:["Ultrasonidos (UT)","Inspección Visual (VT)","Radiografía (RT)","Partículas Magnéticas (MT)"],c:1,fb:"La Inspección Visual (VT) es siempre el primer ensayo END. Es el más básico, rápido y económico. Permite descartar piezas defectuosas sin equipos especiales."},
+  {q:"¿Qué ensayo END detecta grietas ligeramente subsuperficiales en un eje de acero al carbono?",opts:["Líquidos Penetrantes (PT)","Inspección Visual (VT)","Partículas Magnéticas (MT)","Radiografía (RT)"],c:2,fb:"Las Partículas Magnéticas (MT) detectan discontinuidades superficiales y ligeramente subsuperficiales en materiales ferromagnéticos gracias al campo de fuga magnético."},
+  {q:"¿Qué elemento es imprescindible en el ensayo de ultrasonidos para garantizar la transmisión de la onda?",opts:["Revelador blanco en polvo","Medio acoplante (gel, aceite o agua)","Partículas fluorescentes magnéticas","Película radiográfica sensible"],c:1,fb:"En UT es imprescindible un medio acoplante entre el palpador y la pieza. Sin él, el aire provocaría reflexión total de la onda y no penetraría en el material."},
+  {q:"¿Qué inconveniente importante tiene la Radiografía (RT) en cuanto a seguridad laboral?",opts:["Solo detecta defectos superficiales","Trabaja con radiaciones perjudiciales para la salud","No puede usarse en campo, solo en laboratorio","Es siempre más cara que los ultrasonidos"],c:1,fb:"La Radiografía (RT) utiliza rayos X o radiación gamma, perjudiciales para la salud. Obliga a trabajar en horarios en que el personal habitual no está presente."},
+  {q:"¿Cuál es el principio físico en el que se basa el ensayo de Líquidos Penetrantes?",opts:["Campo magnético de fuga","Reflexión de ondas sonoras de alta frecuencia","Capilaridad del líquido penetrante","Absorción diferencial de rayos X"],c:2,fb:"Los Líquidos Penetrantes se basan en la CAPILARIDAD: un líquido de baja tensión superficial penetra por sí solo en grietas y poros abiertos a la superficie."},
+  {q:"¿Qué norma regula la cualificación y certificación de los operadores de END?",opts:["UNE-EN ISO 3452","UNE-EN ISO 9712","UNE-EN ISO 17636","UNE-EN ISO 9934"],c:1,fb:"La norma UNE-EN ISO 9712:2023 regula la cualificación y certificación del personal de END en tres niveles (Nivel I, II y III). Es la certificación de referencia en España y Europa."},
+  {q:"¿Qué tipo de defectos detecta la Inspección Visual (VT)?",opts:["Defectos internos volumétricos como sopladuras","Solo defectos subsuperficiales","Únicamente defectos superficiales visibles","Defectos a cualquier profundidad"],c:2,fb:"La Inspección Visual (VT) solo detecta imperfecciones SUPERFICIALES visibles. Para detectar defectos internos o subsuperficiales se necesitan otros métodos como UT, RT o PM."},
+  {q:"¿Qué función tiene el revelador en el ensayo de Líquidos Penetrantes?",opts:["Limpiar la superficie antes de aplicar el penetrante","Magnetizar la pieza para atraer partículas","Absorber el líquido retenido en las discontinuidades haciéndolas visibles","Fijar la imagen en la película radiográfica"],c:2,fb:"El REVELADOR absorbe el líquido penetrante retenido en las discontinuidades, haciendo visible la indicación. Suele ser blanco para contrastar con el penetrante rojo."},
+  {q:"¿Sobre qué tipo de materiales funciona el ensayo de Partículas Magnéticas (MT)?",opts:["Cualquier material metálico","Solo materiales no ferrosos como aluminio y cobre","Materiales ferromagnéticos: hierro, acero, níquel y cobalto","Solo aceros inoxidables austeníticos"],c:2,fb:"Las Partículas Magnéticas (MT) solo funcionan en materiales FERROMAGNÉTICOS: hierro, acero al carbono, acero de baja aleación, níquel y cobalto."},
+  {q:"¿Qué tipo de palpadores se usan en el ensayo de ultrasonidos para inspeccionar soldaduras?",opts:["Solo palpadores de incidencia normal","Solo palpadores de incidencia angular","Palpadores de incidencia normal o angular según el defecto a detectar","Únicamente palpadores de inmersión"],c:2,fb:"En UT se usan palpadores de INCIDENCIA NORMAL para defectos paralelos a la superficie e INCIDENCIA ANGULAR para soldaduras, permitiendo detectar defectos verticales como falta de fusión."},
+  {q:"¿Qué ventaja principal tienen los END frente a los ensayos destructivos?",opts:["Proporcionan valores cuantitativos de resistencia y dureza","Permiten inspeccionar el 100% de la producción sin desperdiciar piezas","Son siempre más rápidos que cualquier ensayo destructivo","No requieren personal cualificado para su realización"],c:1,fb:"La principal ventaja de los END es que permiten inspeccionar el 100% de la producción sin desperdiciar ninguna pieza. También pueden aplicarse durante la fabricación y el mantenimiento."},
+  {q:"¿Qué indica en una placa radiográfica una zona más oscura de lo normal?",opts:["Mayor espesor de material en esa zona","Mayor densidad del material en esa zona","Menor absorción de radiación: posible defecto o menor espesor","La placa está sobreexpuesta por error del operador"],c:2,fb:"En RT, una zona MÁS OSCURA indica que ha llegado más radiación a la película: menor absorción, que puede deberse a menor espesor o a la presencia de un defecto (sopladuras, porosidades)."},
+  {q:"¿Qué limitación importante tienen los END respecto a las propiedades mecánicas?",opts:["No pueden detectar defectos superficiales","Generalmente no proporcionan valores cuantitativos de resistencia o dureza","Solo funcionan en materiales metálicos","Requieren siempre instalar la pieza en una máquina universal"],c:1,fb:"Una limitación importante de los END es que generalmente NO proporcionan valores cuantitativos de propiedades mecánicas como resistencia o dureza. Para eso son necesarios los ensayos destructivos."},
+  {q:"¿Qué diferencia hay entre una indicación y un defecto en los END?",opts:["Son exactamente lo mismo, los dos términos son sinónimos","Una indicación siempre es un defecto","Un defecto siempre es una indicación, pero una indicación no siempre es un defecto","Una indicación es más grave que un defecto"],c:2,fb:"Un DEFECTO siempre es una indicación, pero UNA INDICACIÓN NO SIEMPRE ES UN DEFECTO. Para que una indicación sea defecto debe superar los criterios de aceptación de la norma aplicable."},
+  {q:"¿Qué etapa del ensayo de Líquidos Penetrantes elimina el exceso de penetrante de la superficie?",opts:["Aplicación del revelador","Preparación de la superficie","Eliminación del exceso con el eliminador","Observación de la indicación"],c:2,fb:"La etapa de ELIMINACIÓN DEL EXCESO retira el penetrante de la superficie, dejando solo el que ha penetrado en las discontinuidades para que el revelador lo absorba posteriormente."},
+  {q:"¿En qué sectores industriales son fundamentales los END por sus estrictos requisitos de seguridad?",opts:["Solo en la industria del automóvil y la construcción","Nuclear, aeronáutico, ferroviario y petroquímico","Exclusivamente en la industria alimentaria","Solo en la fabricación de herramientas de corte"],c:1,fb:"Los END son fundamentales en sectores con estrictos requisitos de seguridad: industria NUCLEAR, AERONÁUTICA, FERROVIARIA y PETROQUÍMICA, donde un fallo puede tener consecuencias catastróficas."},
+  {q:"¿Qué norma regula las etapas del ensayo de Líquidos Penetrantes?",opts:["UNE-EN ISO 9712","UNE-EN ISO 9934-1","UNE-EN ISO 3452-1","UNE-EN ISO 17636-1"],c:2,fb:"El ensayo de Líquidos Penetrantes está regulado por la norma UNE-EN ISO 3452-1:2022, que establece los principios generales, los productos y las etapas del ensayo."},
+  {q:"¿Qué norma regula el ensayo de Partículas Magnéticas?",opts:["UNE-EN ISO 3452-1","UNE-EN ISO 9934-1","UNE-EN ISO 17636-1","UNE-EN ISO 6892-1"],c:1,fb:"El ensayo de Partículas Magnéticas está regulado por la norma UNE-EN ISO 9934-1:2017, que establece los principios generales, los equipos y los procedimientos de inspección."},
+  {q:"¿Qué norma regula el ensayo radiográfico de soldaduras?",opts:["UNE-EN ISO 9712","UNE-EN ISO 3452-1","UNE-EN ISO 17636-1","UNE-EN ISO 9934-1"],c:2,fb:"El ensayo radiográfico de soldaduras está regulado por la norma UNE-EN ISO 17636-1:2013, que establece los requisitos de la técnica radiográfica con rayos X y gamma."},
+  {q:"¿Qué ventaja tiene la Inspección Visual frente a otros END?",opts:["Detecta defectos internos sin equipos especiales","Es el método más rápido y económico, utilizable en cualquier fase del proceso","Proporciona un registro permanente de todos los defectos encontrados","Puede detectar discontinuidades a cualquier profundidad"],c:1,fb:"La Inspección Visual (VT) es el método más RÁPIDO Y ECONÓMICO de todos los END. No requiere equipos especiales y puede utilizarse en cualquier fase del proceso productivo e incluso en mantenimiento preventivo."},
+  {q:"¿Qué tipos de indicaciones pueden detectarse con los END según su ubicación?",opts:["Solo indicaciones superficiales y subsuperficiales","Solo indicaciones internas volumétricas","Superficiales, subsuperficiales e internas (volumétricas)","Únicamente las abiertas a la superficie exterior"],c:2,fb:"Los END pueden detectar tres tipos de indicaciones: SUPERFICIALES (abiertas a la superficie), SUBSUPERFICIALES (cercanas pero no abiertas) e INTERNAS o VOLUMÉTRICAS (sopladuras, inclusiones, fisuras internas)."}
+];
+
+const r3Pairs=[
+  {left:"Líquidos Penetrantes (PT)",right:"Capilaridad — penetra en grietas abiertas al exterior"},
+  {left:"Partículas Magnéticas (MT)",right:"Campo de fuga — solo en materiales ferromagnéticos"},
+  {left:"Radiografía (RT)",right:"Rayos X o γ — imagen permanente en película"},
+  {left:"Ultrasonidos (UT)",right:"Ondas mecánicas 1–15 MHz — detecta defectos internos"},
+  {left:"Inspección Visual (VT)",right:"Ojo humano — primer END, rápido y económico"}
+];
+
+const allR4=[
+  {sc:"Ensayo de LP sobre tubería de acero. Se observa una mancha roja difusa de 0,3 mm. Según UNE-EN ISO 3452, ese tipo de indicación puntual queda dentro de los límites de aceptación.",a:"aceptable",fb:"Una indicación NO siempre es un defecto. En este caso está dentro de límites → pieza OK."},
+  {sc:"Inspección por PM de un eje de acero. Aparece una acumulación lineal de partículas de 15 mm. La norma establece que ninguna indicación lineal puede superar 5 mm en esa zona crítica.",a:"defecto",fb:"15 mm > 5 mm permitidos. La indicación supera los criterios de aceptación → DEFECTO."},
+  {sc:"Radiografía de una soldadura a tope. Se observa una zona oscura redondeada de 2 mm de diámetro. La norma permite porosidades aisladas de hasta 3 mm en ese espesor de chapa.",a:"aceptable",fb:"2 mm < 3 mm permitidos. La porosidad no supera el límite → indicación aceptable, pieza OK."},
+  {sc:"Inspección visual de una unión soldada. Se detecta un socavado lateral de 1,8 mm de profundidad a lo largo de 80 mm. La norma limita el socavado a un máximo de 0,5 mm de profundidad.",a:"defecto",fb:"1,8 mm > 0,5 mm permitidos. El socavado supera claramente el límite normativo → DEFECTO."},
+  {sc:"Ultrasonidos de una viga soldada. La señal de eco está 6 dB por debajo del nivel de evaluación fijado por la norma.",a:"aceptable",fb:"Si la señal está por debajo del nivel de evaluación de la norma → indicación no relevante, pieza aceptable."},
+  {sc:"Ensayo de LP sobre una brida de acero inoxidable. Se observa una indicación lineal de 8 mm en la zona de la junta. La norma no permite indicaciones lineales superiores a 3 mm en esa zona.",a:"defecto",fb:"8 mm > 3 mm permitidos. Indicación lineal fuera de norma → DEFECTO."},
+  {sc:"Inspección visual de una viga IPE soldada. Se aprecia una pequeña salpicadura de 1 mm adherida junto al cordón. La norma permite salpicaduras puntuales aisladas de hasta 2 mm.",a:"aceptable",fb:"1 mm < 2 mm permitidos. La salpicadura no supera el límite normativo → indicación aceptable, pieza OK."},
+  {sc:"Ensayo de PM sobre un eje de cigüeñal. Se observa una acumulación de partículas de forma redondeada de 2 mm de diámetro. La norma permite indicaciones redondeadas de hasta 4 mm en esa zona.",a:"aceptable",fb:"2 mm < 4 mm permitidos. La indicación redondeada está dentro de los límites → pieza OK."},
+  {sc:"Radiografía de una unión a solape. Se detecta una zona clara alargada de 12 mm que indica falta de fusión. La norma no acepta indicaciones de falta de fusión de ninguna longitud en uniones estructurales.",a:"defecto",fb:"La falta de fusión es un defecto de especial gravedad en uniones estructurales. Cualquier indicación de este tipo → DEFECTO, rechazo obligatorio."},
+  {sc:"Inspección visual de un cordón de soldadura en ángulo. Se aprecia una irregularidad superficial de 0,2 mm de profundidad en el pie del cordón. La norma permite irregularidades de hasta 0,5 mm.",a:"aceptable",fb:"0,2 mm < 0,5 mm permitidos. La irregularidad está dentro de los límites → indicación aceptable, pieza OK."},
+  {sc:"Ensayo de LP sobre pieza de aluminio fundido. Aparece una indicación lineal de 4 mm en una zona no sometida a esfuerzo. La norma permite hasta 2 mm en esa zona.",a:"defecto",fb:"4 mm > 2 mm permitidos. Aunque la zona no esté sometida a esfuerzo, la indicación supera el límite → DEFECTO."},
+  {sc:"Ultrasonidos de un recipiente a presión. La señal de eco detectada supera en 4 dB el nivel de referencia fijado por la norma, que establece rechazo para señales que superen dicho nivel.",a:"defecto",fb:"La señal supera el nivel de referencia → DEFECTO. En recipientes a presión los criterios son especialmente estrictos."},
+  {sc:"Inspección visual de perfiles estructurales tras soldadura. Se observan marcas de arco eléctrico de 1,5 mm fuera del cordón. La norma no permite marcas de arco fuera de la zona de soldadura.",a:"defecto",fb:"Las marcas de arco fuera de la zona de soldadura no están permitidas, independientemente de su tamaño → DEFECTO."},
+  {sc:"Ensayo de PM sobre un raíl ferroviario. Se detectan dos indicaciones redondeadas de 1,5 mm separadas 20 mm entre sí. La norma permite indicaciones aisladas de hasta 3 mm.",a:"aceptable",fb:"Ambas indicaciones son de 1,5 mm < 3 mm y están suficientemente separadas → indicaciones aceptables, pieza OK."},
+  {sc:"Radiografía de soldadura en tubería de alta presión. Se observa una inclusión de escoria alargada de 6 mm. La norma permite inclusiones alargadas de hasta 4 mm en ese espesor.",a:"defecto",fb:"6 mm > 4 mm permitidos. La inclusión de escoria supera el límite → DEFECTO."},
+  {sc:"Inspección visual de una estructura metálica soldada en taller. Se detecta un poro abierto de 0,8 mm en la superficie del cordón. La norma permite porosidades abiertas aisladas de hasta 1,5 mm.",a:"aceptable",fb:"0,8 mm < 1,5 mm permitidos. El poro superficial está dentro de los límites → indicación aceptable, pieza OK."},
+  {sc:"Ensayo de LP sobre componente de acero inoxidable austenítico. Se detecta una indicación lineal de 1 mm en zona de alta responsabilidad. La norma no acepta ninguna indicación lineal en esa zona.",a:"defecto",fb:"En zonas de alta responsabilidad la norma puede establecer criterio cero para indicaciones lineales → DEFECTO aunque sea de 1 mm."},
+  {sc:"Ultrasonidos de una placa de acero laminado. Se detecta una señal de eco cuya amplitud está 2 dB por debajo del nivel de evaluación. La norma no requiere evaluación por debajo de ese umbral.",a:"aceptable",fb:"La señal está por debajo del umbral de evaluación → no requiere acción. Indicación no relevante, pieza aceptable."},
+  {sc:"Inspección visual de un cordón de soldadura. Se observa porosidad superficial distribuida en una zona de 30 mm con varios poros de 0,5 mm. La norma no permite porosidad distribuida en longitudes superiores a 20 mm.",a:"defecto",fb:"Aunque cada poro individualmente sería aceptable, la distribución en 30 mm > 20 mm permitidos → DEFECTO conjunto."},
+  {sc:"Ensayo de PM sobre un componente de acero forjado. Aparece una indicación redondeada de 0,5 mm. La norma permite indicaciones redondeadas de hasta 2 mm en esa zona.",a:"aceptable",fb:"0,5 mm < 2 mm permitidos. La indicación redondeada está claramente dentro de los límites → indicación aceptable, pieza OK."}
+];
+
+function rnd(min,max,dec){return Math.round((Math.random()*(max-min)+min)*Math.pow(10,dec))/Math.pow(10,dec);}
+function genBrinell(){
+  const D=5,t=15;
+  const Fval=[100,150,200,250,300][Math.floor(Math.random()*5)];
+  const d=rnd(1.5,3.5,1);
+  const HB=Math.round(2*Fval/(Math.PI*D*(D-Math.sqrt(D*D-d*d)))*10)/10;
+  const w=[Math.round(HB*1.22*10)/10,Math.round(HB*0.75*10)/10,Math.round(HB*1.55*10)/10];
+  const opts=shuffle([HB,...w]).map(v=>v+" HB");
+  return{type:"Dureza BRINELL",badge:"🔵",
+    html:`<p>Ensayo de dureza <strong>BRINELL</strong>: bola <span class="dato">D = ${D} mm</span>, carga <span class="dato">F = ${Fval} kp</span>, tiempo <span class="dato">t = ${t} s</span>, huella <span class="dato">d = ${d} mm</span>.</p><p style="margin-top:8px">📐 <strong>HB = 2F / [π·D·(D − √(D²−d²))]</strong></p><p style="margin-top:4px">¿Cuál es la dureza Brinell normalizada?</p>`,
+    opts,correct:opts.findIndex(o=>o===HB+" HB"),
+    fb:`HB = 2×${Fval} / [π×${D}×(${D}−√(${D*D}−${d*d}))] = <strong>${HB} HB</strong> → Designación: ${HB} HB ${D} ${Fval} ${t}`};
+}
+function genVickers(){
+  const F=[10,20,30,40,50][Math.floor(Math.random()*5)];
+  const d1=rnd(0.30,0.70,2),d2=rnd(0.30,0.70,2);
+  const dm=Math.round((d1+d2)/2*100)/100;
+  const HV=Math.round(1.854*F/(dm*dm));
+  const w=[Math.round(HV*1.18),Math.round(HV*0.82),Math.round(HV*1.4)];
+  const opts=shuffle([HV,...w]).map(v=>v+" HV");
+  return{type:"Dureza VICKERS",badge:"🟡",
+    html:`<p>Ensayo de dureza <strong>VICKERS</strong>: diagonales <span class="dato">d₁ = ${d1} mm</span> y <span class="dato">d₂ = ${d2} mm</span>, fuerza <span class="dato">F = ${F} Kp</span>.</p><p style="margin-top:8px">📐 <strong>d_m = (d₁+d₂)/2 &nbsp;·&nbsp; HV = 1,854 × F / d_m²</strong></p>`,
+    opts,correct:opts.findIndex(o=>o===HV+" HV"),
+    fb:`d_m = (${d1}+${d2})/2 = ${dm} mm → HV = 1,854×${F}/${dm}² = <strong>${HV} HV</strong> → Designación: ${HV} HV ${F}`};
+}
+function genRockwell(){
+  const tipo=Math.random()>0.5?"C":"B";
+  const h1=rnd(0.05,0.15,3);
+  const h3=rnd(h1+0.02,h1+0.12,3);
+  const h=Math.round((h3-h1)*1000)/1000;
+  const e=Math.round(h/0.002*10)/10;
+  const HR=tipo==="C"?Math.round((100-e)*10)/10:Math.round((130-e)*10)/10;
+  const label=tipo==="C"?"HRC":"HRB";
+  const pen=tipo==="C"?"Cono de diamante (materiales duros)":"Bola de acero (materiales blandos)";
+  const form=tipo==="C"?"HRC = 100 − e":"HRB = 130 − e";
+  const w=[Math.round((HR+9)*10)/10,Math.round((HR-9)*10)/10,Math.round((HR+18)*10)/10];
+  const opts=shuffle([HR,...w]).map(v=>v+" "+label);
+  return{type:`Dureza ROCKWELL ${label}`,badge:"🔴",
+    html:`<p>Ensayo <strong>ROCKWELL ${label}</strong> (${pen}): profundidad con precarga <span class="dato">h₁ = ${h1} mm</span>, tras carga y retirada <span class="dato">h₃ = ${h3} mm</span>.</p><p style="margin-top:8px">📐 <strong>h = h₃−h₁ &nbsp;·&nbsp; e = h/0,002 &nbsp;·&nbsp; ${form}</strong></p>`,
+    opts,correct:opts.findIndex(o=>o===HR+" "+label),
+    fb:`h = ${h3}−${h1} = ${h} mm → e = ${h}/0,002 = ${e} → ${form} = <strong>${HR} ${label}</strong>`};
+}
+function genCharpy(){
+  const m=[10,20,30,40][Math.floor(Math.random()*4)];
+  const h1=rnd(0.8,1.5,1);
+  const h2=rnd(0.3,parseFloat((h1-0.2).toFixed(1)),1);
+  const E=Math.round(m*10*(h1-h2)*10)/10;
+  const S0=80;
+  const KCVmm=Math.round(E/S0*1000)/1000;
+  const KCV=Math.round(KCVmm*100*100)/100;
+  const w=[Math.round(KCV*1.4*100)/100,Math.round(KCV*0.6*100)/100,Math.round(KCV*2.1*100)/100];
+  const opts=shuffle([KCV,...w]).map(v=>v+" J/cm²");
+  return{type:"Resiliencia CHARPY",badge:"⚡",
+    html:`<p>Péndulo de <strong>Charpy</strong>: probeta <span class="dato">10×10 mm</span>, entalla <span class="dato">2 mm</span>. Maza <span class="dato">m = ${m} kg</span>, altura inicial <span class="dato">h₁ = ${h1} m</span>, altura final <span class="dato">h₂ = ${h2} m</span>. g = 10 m/s².</p><p style="margin-top:8px">📐 <strong>E = m·g·(h₁−h₂) &nbsp;·&nbsp; S₀ = 10×8 = 80 mm² &nbsp;·&nbsp; KCV = E/S₀</strong></p><p style="margin-top:4px;font-size:.8rem;color:#aaa">Recuerda convertir a J/cm² (1 cm² = 100 mm²)</p>`,
+    opts,correct:opts.findIndex(o=>o===KCV+" J/cm²"),
+    fb:`E = ${m}×10×(${h1}−${h2}) = ${E} J · S₀ = 80 mm² · KCV = ${E}/80 = ${KCVmm} J/mm² × 100 = <strong>${KCV} J/cm²</strong>`};
+}
+function generateR5(){
+  const pool=[genBrinell(),genVickers(),genRockwell(),genCharpy()];
+  pool.push([genBrinell,genVickers,genRockwell,genCharpy][Math.floor(Math.random()*4)]());
+  return shuffle(pool);
+}
+
+let state={};
+function startGame(){
+  const name=document.getElementById('input-name').value.trim();
+  if(!name){alert('Por favor, introduce tu nombre antes de empezar.');return;}
+  const r1=shuffle([...allR1]).slice(0,20);
+  const r2=shuffle([...allR2]).slice(0,20);
+  const r4=shuffle([...allR4]).slice(0,15);
+  const r5=generateR5();
+  state={name,round:1,qIndex:0,score:0,roundScores:[0,0,0,0,0],
+    r1,r2,r4,r5,log:[],r3Evaluated:false,
+    matchSelected:{left:null,right:null},r3Selections:{},r3Left:null,r3Right:null,
+    totalQ:r1.length+r2.length+1+r4.length+r5.length};
+  showScreen('screen-game');renderQuestion();
+}
+function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
+function updateHUD(){
+  let qN,qT;
+  if(state.round===1){qN=state.qIndex+1;qT=state.r1.length;}
+  else if(state.round===2){qN=state.qIndex+1;qT=state.r2.length;}
+  else if(state.round===3){qN=1;qT=1;}
+  else if(state.round===4){qN=state.qIndex+1;qT=state.r4.length;}
+  else{qN=state.qIndex+1;qT=state.r5.length;}
+  document.getElementById('hud-round').textContent=state.round;
+  document.getElementById('hud-q').textContent=qN;
+  document.getElementById('hud-total').textContent=qT;
+  document.getElementById('hud-score').textContent=state.score;
+  let done=0;
+  if(state.round===1)done=state.qIndex;
+  else if(state.round===2)done=state.r1.length+state.qIndex;
+  else if(state.round===3)done=state.r1.length+state.r2.length;
+  else if(state.round===4)done=state.r1.length+state.r2.length+1+state.qIndex;
+  else done=state.r1.length+state.r2.length+1+state.r4.length+state.qIndex;
+  document.getElementById('prog').style.width=(done/state.totalQ*100)+'%';
+}
+function renderQuestion(){
+  updateHUD();
+  const c=document.getElementById('q-container');
+  document.getElementById('btn-next').classList.remove('show');
+  if(state.round===1)renderQuiz(c,state.r1[state.qIndex],'🔬 RONDA 1 · ENSAYOS DESTRUCTIVOS',1);
+  else if(state.round===2)renderQuiz(c,state.r2[state.qIndex],'🎯 RONDA 2 · ENSAYOS NO DESTRUCTIVOS',2);
+  else if(state.round===3)renderR3(c);
+  else if(state.round===4)renderR4(c);
+  else renderR5(c);
+}
+function renderQuiz(c,q,badge,rnd){
+  c.innerHTML=`<div class="q-card"><span class="round-badge">${badge}</span><div class="q-text">${q.q}</div><div class="options">${q.opts.map((o,i)=>`<button class="opt-btn" id="opt-${i}" onclick="answerQuiz(${i},${rnd})">${o}</button>`).join('')}</div><div class="feedback" id="feedback"></div></div>`;
+}
+function answerQuiz(idx,rnd){
+  const q=rnd===1?state.r1[state.qIndex]:state.r2[state.qIndex];
+  document.querySelectorAll('.opt-btn').forEach(b=>b.disabled=true);
+  const ok=idx===q.c;
+  if(ok){state.score+=20;state.roundScores[rnd-1]+=20;}
+  document.getElementById('opt-'+q.c).classList.add('correct');
+  if(!ok)document.getElementById('opt-'+idx).classList.add('wrong');
+  const fb=document.getElementById('feedback');
+  fb.innerHTML=`<strong>${ok?'✅ ¡Correcto! +20 pts':'❌ Incorrecto.'}</strong>${q.fb}`;
+  fb.className='feedback '+(ok?'ok':'fail')+' show';
+  document.getElementById('hud-score').textContent=state.score;
+  state.log.push({round:rnd,q:q.q,ok,userAns:q.opts[idx],correct:q.opts[q.c]});
+  document.getElementById('btn-next').classList.add('show');
+}
+function renderR3(c){
+  const sL=shuffle([...r3Pairs]);const sR=shuffle([...r3Pairs]);
+  state.r3Left=sL;state.r3Right=sR;
+  state.r3Selections={};state.matchSelected={left:null,right:null};state.r3Evaluated=false;
+  c.innerHTML=`<div class="q-card"><span class="round-badge">🔗 RONDA 3 · EMPAREJA</span><div class="q-text">Relaciona cada técnica END con su principio o característica clave. Empareja todas y luego pulsa <strong>Comprobar</strong>.</div><div class="match-container"><div><h4>Técnica END</h4>${sL.map((p,i)=>`<div class="match-item" id="ml-${i}" onclick="selectMatch('left',${i})">${p.left}</div>`).join('')}</div><div><h4>Característica</h4>${sR.map((p,i)=>`<div class="match-item" id="mr-${i}" onclick="selectMatch('right',${i})">${p.right}</div>`).join('')}</div></div><div style="margin-top:12px;text-align:center"><button id="btn-check" onclick="checkR3()" style="display:none;background:#ffd700;color:#0d1b2a;border:none;padding:10px 28px;border-radius:50px;font-size:.9rem;font-weight:bold;cursor:pointer;">✔ Comprobar</button></div><div class="feedback" id="feedback"></div></div>`;
+}
+function selectMatch(side,idx){
+  if(state.r3Evaluated)return;
+  const el=document.getElementById(side==='left'?`ml-${idx}`:`mr-${idx}`);
+  if(state.matchSelected[side]!==null){
+    const prev=document.getElementById(state.matchSelected[side]!=null?(side==='left'?`ml-${state.matchSelected[side]}`:`mr-${state.matchSelected[side]}`):'x');
+    if(prev)prev.classList.remove('selected');
+  }
+  state.matchSelected[side]=idx;el.classList.add('selected');
+  if(state.matchSelected.left!==null&&state.matchSelected.right!==null){
+    const li=state.matchSelected.left,ri=state.matchSelected.right;
+    if(state.r3Selections[li]!==undefined){
+      const oldMr=document.getElementById(`mr-${state.r3Selections[li]}`);
+      if(oldMr)oldMr.classList.remove('selected','paired');
+    }
+    Object.keys(state.r3Selections).forEach(k=>{
+      if(state.r3Selections[k]===ri&&parseInt(k)!==li){
+        const oldMl=document.getElementById(`ml-${k}`);
+        if(oldMl)oldMl.classList.remove('selected','paired');
+        delete state.r3Selections[k];
+      }
+    });
+    state.r3Selections[li]=ri;
+    document.getElementById(`ml-${li}`).classList.remove('selected');
+    document.getElementById(`mr-${ri}`).classList.remove('selected');
+    document.getElementById(`ml-${li}`).classList.add('paired');
+    document.getElementById(`mr-${ri}`).classList.add('paired');
+    state.matchSelected={left:null,right:null};
+    if(Object.keys(state.r3Selections).length===r3Pairs.length)document.getElementById('btn-check').style.display='inline-block';
+  }
+}
+function checkR3(){
+  state.r3Evaluated=true;
+  document.getElementById('btn-check').style.display='none';
+  let correct=0;
+  Object.keys(state.r3Selections).forEach(li=>{
+    const ri=state.r3Selections[li];
+    const lItem=state.r3Left[parseInt(li)];
+    const rItem=state.r3Right[ri];
+    const ml=document.getElementById(`ml-${li}`);
+    const mr=document.getElementById(`mr-${ri}`);
+    ml.classList.remove('paired');mr.classList.remove('paired');
+    if(lItem.left===rItem.left){ml.classList.add('matched');mr.classList.add('matched');correct++;}
+    else{ml.classList.add('wrong-match');mr.classList.add('wrong-match');}
+  });
+  const pts=correct*20;
+  state.score+=pts;state.roundScores[2]+=pts;
+  document.getElementById('hud-score').textContent=state.score;
+  const allOk=correct===r3Pairs.length;
+  const fb=document.getElementById('feedback');
+  fb.innerHTML=`<strong>${allOk?'🎉 ¡Todo correcto!':correct>0?`✅ ${correct} de ${r3Pairs.length} correctas`:'❌ Ninguna correcta'} · +${pts} pts</strong>Recuerda: capilaridad (PT) · campo magnético (MT) · rayos X/γ (RT) · ondas mecánicas (UT) · ojo humano (VT).`;
+  fb.className='feedback '+(allOk?'ok':'fail')+' show';
+  state.log.push({round:3,q:'Empareja END con principio físico',ok:allOk,userAns:`${correct}/${r3Pairs.length} correctas`,correct:'5/5 correctas'});
+  document.getElementById('btn-next').classList.add('show');
+}
+function renderR4(c){
+  const q=state.r4[state.qIndex];
+  c.innerHTML=`<div class="q-card"><span class="round-badge">⚠️ RONDA 4 · ¿INDICACIÓN O DEFECTO?</span><div class="q-scenario">${q.sc}</div><div class="q-text">¿Es esta indicación un defecto que obliga a actuar sobre la pieza?</div><div class="defecto-btns"><button class="defecto-btn aceptable" onclick="answerR4('aceptable')">✅ INDICACIÓN ACEPTABLE<br><small>No es defecto · Pieza OK</small></button><button class="defecto-btn defecto" onclick="answerR4('defecto')">❌ ES UN DEFECTO<br><small>Rechazar / Reparar</small></button></div><div class="feedback" id="feedback"></div></div>`;
+}
+function answerR4(ans){
+  const q=state.r4[state.qIndex];
+  document.querySelectorAll('.defecto-btn').forEach(b=>b.disabled=true);
+  const ok=ans===q.a;
+  if(ok){state.score+=20;state.roundScores[3]+=20;}
+  const fb=document.getElementById('feedback');
+  fb.innerHTML=`<strong>${ok?'✅ ¡Correcto! +20 pts':'❌ Incorrecto.'}</strong>${q.fb}`;
+  fb.className='feedback '+(ok?'ok':'fail')+' show';
+  document.getElementById('hud-score').textContent=state.score;
+  const lbl=q.a==='aceptable'?'Indicación aceptable':'Es un defecto';
+  state.log.push({round:4,q:q.sc.substring(0,70)+'…',ok,userAns:ans==='aceptable'?'Indicación aceptable':'Es un defecto',correct:lbl});
+  document.getElementById('btn-next').classList.add('show');
+}
+function renderR5(c){
+  const q=state.r5[state.qIndex];
+  c.innerHTML=`<div class="q-card"><span class="round-badge">🔢 RONDA 5 · PROBLEMA — ${q.badge} ${q.type}</span><div class="num-problem">${q.html}</div><div class="q-text" style="margin-bottom:8px">Selecciona el resultado correcto:</div><div class="num-options">${q.opts.map((o,i)=>`<button class="opt-btn" id="opt-${i}" onclick="answerR5(${i})">${o}</button>`).join('')}</div><div class="feedback" id="feedback"></div></div>`;
+}
+function answerR5(idx){
+  const q=state.r5[state.qIndex];
+  document.querySelectorAll('.opt-btn').forEach(b=>b.disabled=true);
+  const ok=idx===q.correct;
+  if(ok){state.score+=20;state.roundScores[4]+=20;}
+  document.getElementById('opt-'+q.correct).classList.add('correct');
+  if(!ok)document.getElementById('opt-'+idx).classList.add('wrong');
+  const fb=document.getElementById('feedback');
+  fb.innerHTML=`<strong>${ok?'✅ ¡Correcto! +20 pts':'❌ Incorrecto.'}</strong>Resolución: ${q.fb}`;
+  fb.className='feedback '+(ok?'ok':'fail')+' show';
+  document.getElementById('hud-score').textContent=state.score;
+  state.log.push({round:5,q:q.type,ok,userAns:q.opts[idx],correct:q.opts[q.correct]});
+  document.getElementById('btn-next').classList.add('show');
+}
+function nextQuestion(){
+  document.getElementById('btn-next').classList.remove('show');
+  if(state.round===1){state.qIndex++;if(state.qIndex>=state.r1.length){state.round=2;state.qIndex=0;}}
+  else if(state.round===2){state.qIndex++;if(state.qIndex>=state.r2.length){state.round=3;state.qIndex=0;}}
+  else if(state.round===3){state.round=4;state.qIndex=0;}
+  else if(state.round===4){state.qIndex++;if(state.qIndex>=state.r4.length){state.round=5;state.qIndex=0;}}
+  else{state.qIndex++;if(state.qIndex>=state.r5.length){showResults();return;}}
+  renderQuestion();
+}
+function showResults(){
+  const max=state.totalQ*20;
+  document.getElementById('res-name').textContent='👤 '+state.name;
+  document.getElementById('final-score').textContent=state.score;
+  document.getElementById('final-max').textContent='de '+max+' puntos posibles';
+  const pct=state.score/max;
+  document.getElementById('final-msg').textContent=
+    pct>=0.9?'🏆 ¡Inspector de élite! Dominas tanto los ED como los END.':
+    pct>=0.7?'👍 ¡Muy buen resultado! Tienes una sólida base en ensayos.':
+    pct>=0.5?'📚 Aprobado, pero repasa los temas con más fallos.':
+    '🔧 Necesitas repasar la unidad. ¡Puedes mejorar, inténtalo de nuevo!';
+  ['r1s','r2s','r3s','r4s','r5s'].forEach((id,i)=>document.getElementById(id).textContent=state.roundScores[i]+' pts');
+  const names=['🔬 Ronda 1 — Ensayos Destructivos','🎯 Ronda 2 — Ensayos No Destructivos','🔗 Ronda 3 — Empareja END','⚠️ Ronda 4 — Indicación / Defecto','🔢 Ronda 5 — Problemas numéricos'];
+  let html='';
+  for(let r=1;r<=5;r++){
+    const items=state.log.filter(l=>l.round===r);if(!items.length)continue;
+    html+=`<div class="detail-section"><h2>${names[r-1]}</h2>`;
+    items.forEach(it=>{
+      html+=`<div class="detail-item"><div class="detail-icon">${it.ok?'✅':'❌'}</div><div class="detail-text"><div class="d-q">${it.q}</div><div class="d-ans ${it.ok?'ok':'fail'}">${it.ok?'Correcto: '+it.correct:'Tu respuesta: '+it.userAns+' · Correcta: '+it.correct}</div></div></div>`;
+    });
+    html+='</div>';
+  }
+  document.getElementById('detail-container').innerHTML=html;
+  document.getElementById('prog').style.width='100%';
+  showScreen('screen-results');
+}
+function restartGame(){showScreen('screen-intro');}
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+</script>
+</body>
+</html>
